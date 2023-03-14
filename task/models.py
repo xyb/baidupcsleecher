@@ -1,3 +1,5 @@
+from os import makedirs
+
 from django.conf import settings
 from django.db import models
 
@@ -27,5 +29,18 @@ class Task(models.Model):
             models.Index(fields=["shared_link"]),
         ]
 
-    def get_data_path(self):
-        return settings.DATA_DIR / str(self.id)
+    @property
+    def name(self):
+        return f"{task.created_at.isoformat()[:19]}-{task.id}"
+
+    @property
+    def data_path(self):
+        return settings.DATA_DIR / self.name
+
+    def ensure_data_path(self):
+        if not self.data_path.exists():
+            makedirs(self.data_path, exists_ok=True)
+
+    @property
+    def remote_path(self):
+        return self.name

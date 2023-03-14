@@ -4,14 +4,14 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from task.converter import convert2mp3
+from task.baidupcs import BaiduPCS
 from task.models import Task
 
 # import traceback
 
 
 def convert(task):
-    print(f"start convert {task.from_path} to {task.to_path}")
+    print(f"start leech {task.shared_link} to {task.data_path}")
     task.status = Task.Status.STARTED
     task.started_at = timezone.now()
     task.save()
@@ -19,13 +19,16 @@ def convert(task):
     failed = False
     message = ""
     try:
-        convert2mp3(
-            task.get_full_from_path(),
-            task.get_full_to_path(),
+        client = BaiduPCS(settings.PAN_BAIDU_BDUSS, settings.PAN_BAIDU_COOKIES)
+        client.leech(
+            task.shared_link,
+            task.shared_password,
+            remote_path=task.remote_path,
+            local_path=task.data_path,
         )
-        print(f"convert {task.to_path} succeeded.")
+        print(f"leech {task.shared_link} succeeded.")
     except Exception as e:
-        print(f"convert {task.to_path} failed.")
+        print(f"leech {task.shared_link} failed.")
         failed = True
         # tb = traceback.format_exc()
         # message = f'{e}\n{tb}'
@@ -45,7 +48,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--once",
             action="store_true",
-            help="run converter for exists tasks and exit immediately.",
+            help="run leecher for exists tasks and exit immediately.",
         )
 
     def handle(self, *args, **options):
