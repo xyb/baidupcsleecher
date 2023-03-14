@@ -1,4 +1,5 @@
 Django
 djangorestframework
 django-cors-headers
+django-filter
 whitenoise
