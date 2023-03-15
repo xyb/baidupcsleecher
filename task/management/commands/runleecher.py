@@ -33,7 +33,7 @@ def leech(task):
         task.save()
         print(f"save {task.shared_link} succeeded.")
 
-        task.files = json.dumps(client.list_files(task.remote_path))
+        task.files = json.dumps(list(client.list_files(task.remote_path)))
         task.file_listed_at = timezone.now()
         task.save()
         print(f"list {task.shared_link} files succeeded.")

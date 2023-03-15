@@ -1,3 +1,4 @@
+import functools
 from os.path import basename
 from os import makedirs
 import re
@@ -17,14 +18,30 @@ class BaiduPCS:
         self.cookies = cookies
         self.api = BaiduPCSApi(bduss=bduss, cookies=cookies)
 
+    @functools.cache
     def list_files(self, remote_dir):
-        pass
+        files = self.api.list(remote_dir, recursive=True)
+        result = []
+        for file in files:
+            result.append(dict(
+                path=file.path,
+                is_dir=file.is_dir,
+                is_file=file.is_file,
+                size=file.size,
+                md5=file.md5,
+                ctime=file.ctime,
+                mtime=file.mtime,
+            ))
+        return result
 
     def save_shared_link(self, remote_dir, link, password=None):
         save_shared(self.api, link, remote_dir, password=password)
 
     def download_dir(self, remote_dir, local_dir, sample_size=0):
-        pass
+        for file in self.list_files(remote_dir):
+            remote_path = file['path']
+            local_path = Path(local_dir) / basename(remote_path)
+            self.download_file(remote_path, local_path, sample_size)
 
     def download_file(self, remote_path, local_dir, sample_size=0):
         local_path = Path(local_dir) / basename(remote_path)
