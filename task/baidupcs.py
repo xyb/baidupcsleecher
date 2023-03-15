@@ -1,4 +1,4 @@
-import functools
+from functools import cache
 from os.path import basename
 from os import makedirs
 import re
@@ -6,7 +6,7 @@ from collections import deque
 from pathlib import Path, PurePosixPath
 import requests
 
-from baidupcs_py.baidupcs import PCS_UA
+from baidupcs_py.baidupcs import BaiduPCSApi, PCS_UA
 
 
 SHARED_URL_PREFIX = "https://pan.baidu.com/s/"
@@ -18,7 +18,7 @@ class BaiduPCS:
         self.cookies = cookies
         self.api = BaiduPCSApi(bduss=bduss, cookies=cookies)
 
-    @functools.cache
+    @cache
     def list_files(self, remote_dir):
         files = self.api.list(remote_dir, recursive=True)
         result = []
@@ -78,8 +78,8 @@ class BaiduPCS:
         return total
 
     def leech(self, remote_dir, local_dir, sample_size=0):
-        if not store_path.exists():
-            makedirs(store_path, exists_ok=True)
+        if not local_dir.exists():
+            makedirs(local_dir, exists_ok=True)
 
         self.download_dir(remote_dir, local_dir, sample_size=head_size)
 
@@ -102,7 +102,7 @@ def _unify_shared_url(url: str) -> str:
     raise ValueError(f"The shared url is not a valid url. {url}")
 
 def remotepath_exists(
-    api: BaiduPCSApi, name: str, rd: str, _cache={}
+    api, name: str, rd: str, _cache={}
 ) -> bool:
     names = _cache.get(rd)
     if not names:

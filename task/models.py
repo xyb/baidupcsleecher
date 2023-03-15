@@ -1,3 +1,4 @@
+from pathlib import Path
 from os import makedirs
 
 from django.conf import settings
@@ -38,7 +39,9 @@ class Task(models.Model):
 
     @property
     def path(self):
-        return f"{self.created_at.isoformat()[:19]}_{self.id}"
+        time = self.created_at.isoformat()[:19]
+        time = time.replace('-', '').replace(':', '')
+        return f"{time}_{self.id}"
 
     @property
     def sample_path(self):
@@ -54,4 +57,4 @@ class Task(models.Model):
 
     @property
     def remote_path(self):
-        return self.path
+        return str(Path(settings.REMOTE_LEECHER_DIR) / self.path)

@@ -1,5 +1,6 @@
 from time import sleep
 import json
+import traceback
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -7,11 +8,11 @@ from django.utils import timezone
 
 from task.baidupcs import BaiduPCS
 from task.models import Task
+from task.utils import cookies2dict
 
-# import traceback
 
 
-def leech(task):
+def leech(client, task):
     print(f"start leech {task.shared_link} to {task.data_path}")
     task.status = Task.Status.STARTED
     task.started_at = timezone.now()
@@ -20,14 +21,11 @@ def leech(task):
     failed = False
     message = ""
     try:
-        client = BaiduPCS(
-            settings.PAN_BAIDU_BDUSS,
-            settings.PAN_BAIDU_COOKIES,
-        )
+        print(task.remote_path)
         client.save_shared_link(
+            task.remote_path,
             task.shared_link,
             task.shared_password,
-            remote_path=task.remote_path,
         )
         task.transfer_completed_at = timezone.now()
         task.save()
@@ -39,8 +37,8 @@ def leech(task):
         print(f"list {task.shared_link} files succeeded.")
 
         client.leech(
-            remote_path=task.remote_path,
-            local_path=task.data_path,
+            remote_dir=task.remote_path,
+            local_dir=task.data_path,
             sample_size=10240,
         )
         task.sample_downloaded_at = timezone.now()
@@ -48,10 +46,9 @@ def leech(task):
         print(f"sample of {task.shared_link} downloaded.")
 
         client.leech(
-            task.shared_link,
-            task.shared_password,
-            remote_path=task.remote_path,
-            local_path=task.data_path,
+            remote_dir=task.remote_path,
+            local_dir=task.data_path,
+            sample_size=0,
         )
         task.full_downloaded_at = timezone.now()
         task.save()
@@ -59,9 +56,10 @@ def leech(task):
     except Exception as e:
         print(f"leech {task.shared_link} failed.")
         failed = True
-        # tb = traceback.format_exc()
-        # message = f'{e}\n{tb}'
+        tb = traceback.format_exc()
         message = f"{e}"
+        print(message)
+        print(tb)
 
     task.status = Task.Status.FINISHED
     task.finished_at = timezone.now()
@@ -81,10 +79,14 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        client = BaiduPCS(
+            settings.PAN_BAIDU_BDUSS,
+            cookies2dict(settings.PAN_BAIDU_COOKIES),
+        )
         while True:
             tasks = Task.objects.filter(status=Task.Status.INITED)
             for task in tasks:
-                leech(task)
+                leech(client, task)
 
             if options["once"]:
                 return
