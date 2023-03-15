@@ -168,7 +168,8 @@ def save_shared(
         except BaiduPCSError as err:
             if err.error_code == 12:  # 12: "文件已经存在"
                 print(
-                    f"[yellow]WARNING[/]: error_code: {err.error_code}, {shared_path.path} has be in {rd}"
+                    f"WARNING: error_code: {err.error_code}, "
+                    "{shared_path.path} has be in {rd}"
                 )
             elif err.error_code == -32:  # -32: "剩余空间不足，无法转存",
                 raise err
@@ -178,7 +179,8 @@ def save_shared(
                 130,  # "转存文件数超限"
             ):
                 print(
-                    f"[yellow]WARNING[/]: error_code: {err.error_code}, {shared_path.path} "
+                    f"WARNING: error_code: {err.error_code},"
+                    " {shared_path.path} "
                     "has more items and need to transfer one by one"
                 )
             else:
@@ -195,5 +197,22 @@ def save_shared(
             shared_paths.extendleft(sub_paths[::-1])
 
 
-def list_all_sub_paths():
-    fixme
+def list_all_sub_paths(
+    api,
+    sharedpath: str,
+    uk: int,
+    share_id: int,
+    bdstoken: str,
+):
+    sub_paths = []
+    page = 1
+    size = 100
+    while True:
+        sps = api.list_shared_paths(
+            sharedpath, uk, share_id, bdstoken, page=page, size=size
+        )
+        sub_paths += sps
+        if len(sps) < 100:
+            break
+        page += 1
+    return sub_paths

@@ -22,11 +22,31 @@ class Task(models.Model):
     callback = models.CharField(max_length=1024, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     started_at = models.DateTimeField(blank=True, null=True, editable=False)
-    finished_at = models.DateTimeField(blank=True, null=True, editable=False)
-    transfer_completed_at = models.DateTimeField(blank=True, null=True, editable=False)
-    file_listed_at = models.DateTimeField(blank=True, null=True, editable=False)
-    sample_downloaded_at = models.DateTimeField(blank=True, null=True, editable=False)
-    full_downloaded_at = models.DateTimeField(blank=True, null=True, editable=False)
+    finished_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        editable=False,
+    )
+    transfer_completed_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        editable=False,
+    )
+    file_listed_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        editable=False,
+    )
+    sample_downloaded_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        editable=False,
+    )
+    full_downloaded_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        editable=False,
+    )
     failed = models.BooleanField(default=False, editable=False)
     message = models.CharField(max_length=1000, editable=False)
     files = models.TextField(editable=False)
