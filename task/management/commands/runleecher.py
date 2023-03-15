@@ -1,4 +1,5 @@
 from time import sleep
+import json
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -32,13 +33,15 @@ def leech(task):
         task.save()
         print(f"save {task.shared_link} succeeded.")
 
+        task.files = json.dumps(client.list_files(task.remote_path))
         task.file_listed_at = timezone.now()
         task.save()
+        print(f"list {task.shared_link} files succeeded.")
 
         client.leech(
             remote_path=task.remote_path,
             local_path=task.data_path,
-            sample_size=1024,
+            sample_size=10240,
         )
         task.sample_downloaded_at = timezone.now()
         task.save()

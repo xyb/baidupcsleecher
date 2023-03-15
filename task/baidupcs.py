@@ -1,7 +1,11 @@
+from os.path import basename
 from os import makedirs
 import re
 from collections import deque
 from pathlib import Path, PurePosixPath
+import requests
+
+from baidupcs_py.baidupcs import PCS_UA
 
 
 SHARED_URL_PREFIX = "https://pan.baidu.com/s/"
@@ -11,9 +15,9 @@ class BaiduPCS:
     def __init__(self, bduss, cookies):
         self.bduss = bduss
         self.cookies = cookies
-        self.api = None
+        self.api = BaiduPCSApi(bduss=bduss, cookies=cookies)
 
-    def list_shared_link_files(self, link, password=""):
+    def list_files(self, remote_dir):
         pass
 
     def save_shared_link(self, remote_dir, link, password=None):
@@ -22,8 +26,39 @@ class BaiduPCS:
     def download_dir(self, remote_dir, local_dir, sample_size=0):
         pass
 
-    def download_file(self, path):
-        pass
+    def download_file(self, remote_path, local_dir, sample_size=0):
+        local_path = Path(local_dir) / basename(remote_path)
+
+        if not local_path.parent.exists():
+            local_path.parent.mkdir(parents=True)
+
+        if local_path.exists():
+            print(f"[yellow]{local_path}[/yellow] is ready existed.")
+            return
+
+        url = self.api.download_link(remotepath)
+        if not url:
+            print(remotepath)
+            return
+
+        headers = {
+            "Cookie": f"BDUSS={cookies['BDUSS']};",
+            "User-Agent": PCS_UA,
+            # TODO 'Range': 'bytes=%d-' % resume_byte_pos,
+        }
+
+        resp = requests.get(url, headers=headers, stream=True)
+        opener = urllib.request.build_opener()
+        opener.addheaders = headers.items()
+        total = 0
+        with open(local_path, 'wb') as f:
+            for chunk in resp.iter_content(chunk_size=10240):
+                if chunk:
+                    f.write(chunk)
+                    total += len(chunk)
+                if sample_size > 0 and total >= sample_size:
+                    return total
+        return total
 
     def leech(self, remote_dir, local_dir, sample_size=0):
         if not store_path.exists():
