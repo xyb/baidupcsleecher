@@ -11,7 +11,6 @@ from task.models import Task
 from task.utils import cookies2dict
 
 
-
 def leech(client, task):
     print(f"start leech {task.shared_link} to {task.data_path}")
     task.status = Task.Status.STARTED

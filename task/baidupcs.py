@@ -6,7 +6,7 @@ from collections import deque
 from pathlib import Path, PurePosixPath
 import requests
 
-from baidupcs_py.baidupcs import BaiduPCSApi, PCS_UA
+from baidupcs_py.baidupcs import BaiduPCSApi, BaiduPCSError, PCS_UA
 
 
 SHARED_URL_PREFIX = "https://pan.baidu.com/s/"
@@ -53,20 +53,18 @@ class BaiduPCS:
             print(f"[yellow]{local_path}[/yellow] is ready existed.")
             return
 
-        url = self.api.download_link(remotepath)
+        url = self.api.download_link(remote_path)
         if not url:
-            print(remotepath)
+            print(remote_path)
             return
 
         headers = {
-            "Cookie": f"BDUSS={cookies['BDUSS']};",
+            "Cookie": f"BDUSS={self.cookies['BDUSS']};",
             "User-Agent": PCS_UA,
             # TODO 'Range': 'bytes=%d-' % resume_byte_pos,
         }
 
         resp = requests.get(url, headers=headers, stream=True)
-        opener = urllib.request.build_opener()
-        opener.addheaders = headers.items()
         total = 0
         with open(local_path, 'wb') as f:
             for chunk in resp.iter_content(chunk_size=10240):
@@ -79,9 +77,9 @@ class BaiduPCS:
 
     def leech(self, remote_dir, local_dir, sample_size=0):
         if not local_dir.exists():
-            makedirs(local_dir, exists_ok=True)
+            makedirs(local_dir, exist_ok=True)
 
-        self.download_dir(remote_dir, local_dir, sample_size=head_size)
+        self.download_dir(remote_dir, local_dir, sample_size=sample_size)
 
 
 def _unify_shared_url(url: str) -> str:
@@ -101,6 +99,7 @@ def _unify_shared_url(url: str) -> str:
 
     raise ValueError(f"The shared url is not a valid url. {url}")
 
+
 def remotepath_exists(
     api, name: str, rd: str, _cache={}
 ) -> bool:
@@ -109,6 +108,7 @@ def remotepath_exists(
         names = set([PurePosixPath(sp.path).name for sp in api.list(rd)])
         _cache[rd] = names
     return name in names
+
 
 def save_shared(
     api,
@@ -132,7 +132,7 @@ def save_shared(
     for sp in shared_paths:
         _remotedirs[sp] = remotedir
 
-    _dir_exists: Set[str] = set()
+    _dir_exists = set()
 
     while shared_paths:
         shared_path = shared_paths.popleft()
@@ -189,7 +189,11 @@ def save_shared(
             sub_paths = list_all_sub_paths(
                 api, shared_path.path, uk, share_id, bdstoken
             )
-            rd = (Path(rd) / os.path.basename(shared_path.path)).as_posix()
+            rd = (Path(rd) / basename(shared_path.path)).as_posix()
             for sp in sub_paths:
                 _remotedirs[sp] = rd
             shared_paths.extendleft(sub_paths[::-1])
+
+
+def list_all_sub_paths():
+    fixme
