@@ -3,3 +3,4 @@ djangorestframework
 django-cors-headers
 django-filter
 whitenoise
+BaiduPCS-Py

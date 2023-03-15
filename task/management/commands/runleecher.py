@@ -10,7 +10,7 @@ from task.models import Task
 # import traceback
 
 
-def convert(task):
+def leech(task):
     print(f"start leech {task.shared_link} to {task.data_path}")
     task.status = Task.Status.STARTED
     task.started_at = timezone.now()
@@ -19,13 +19,39 @@ def convert(task):
     failed = False
     message = ""
     try:
-        client = BaiduPCS(settings.PAN_BAIDU_BDUSS, settings.PAN_BAIDU_COOKIES)
+        client = BaiduPCS(
+            settings.PAN_BAIDU_BDUSS,
+            settings.PAN_BAIDU_COOKIES,
+        )
+        client.save_shared_link(
+            task.shared_link,
+            task.shared_password,
+            remote_path=task.remote_path,
+        )
+        task.transfer_completed_at = timezone.now()
+        task.save()
+        print(f"save {task.shared_link} succeeded.")
+
+        task.file_listed_at = timezone.now()
+        task.save()
+
+        client.leech(
+            remote_path=task.remote_path,
+            local_path=task.data_path,
+            sample_size=1024,
+        )
+        task.sample_downloaded_at = timezone.now()
+        task.save()
+        print(f"sample of {task.shared_link} downloaded.")
+
         client.leech(
             task.shared_link,
             task.shared_password,
             remote_path=task.remote_path,
             local_path=task.data_path,
         )
+        task.full_downloaded_at = timezone.now()
+        task.save()
         print(f"leech {task.shared_link} succeeded.")
     except Exception as e:
         print(f"leech {task.shared_link} failed.")
@@ -42,7 +68,7 @@ def convert(task):
 
 
 class Command(BaseCommand):
-    help = "run leecher process"
+    help = "run leecher"
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -55,7 +81,7 @@ class Command(BaseCommand):
         while True:
             tasks = Task.objects.filter(status=Task.Status.INITED)
             for task in tasks:
-                convert(task)
+                leech(task)
 
             if options["once"]:
                 return

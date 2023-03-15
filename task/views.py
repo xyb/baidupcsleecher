@@ -13,4 +13,4 @@ class TaskViewSet(mixins.CreateModelMixin,
     queryset = Task.objects.all().order_by("-id")
     serializer_class = TaskSerializer
     filter_backends = (filters.DjangoFilterBackend,)
-    filterset_fields = ("shared_link",)
+    filterset_fields = ("shared_link", "status")

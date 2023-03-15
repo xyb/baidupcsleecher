@@ -18,24 +18,35 @@ class Task(models.Model):
         choices=Status.choices,
         default=Status.INITED,
     )
+    callback = models.CharField(max_length=1024, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     started_at = models.DateTimeField(blank=True, null=True, editable=False)
     finished_at = models.DateTimeField(blank=True, null=True, editable=False)
+    transfer_completed_at = models.DateTimeField(blank=True, null=True, editable=False)
+    file_listed_at = models.DateTimeField(blank=True, null=True, editable=False)
+    sample_downloaded_at = models.DateTimeField(blank=True, null=True, editable=False)
+    full_downloaded_at = models.DateTimeField(blank=True, null=True, editable=False)
     failed = models.BooleanField(default=False, editable=False)
     message = models.CharField(max_length=1000, editable=False)
+    files = models.TextField(editable=False)
 
     class Meta:
         indexes = [
             models.Index(fields=["shared_link"]),
+            models.Index(fields=["status"]),
         ]
 
     @property
-    def name(self):
-        return f"{task.created_at.isoformat()[:19]}-{task.id}"
+    def path(self):
+        return f"{self.created_at.isoformat()[:19]}_{self.id}"
+
+    @property
+    def sample_path(self):
+        return f"{self.path}.sample"
 
     @property
     def data_path(self):
-        return settings.DATA_DIR / self.name
+        return settings.DATA_DIR / self.path
 
     def ensure_data_path(self):
         if not self.data_path.exists():
@@ -43,4 +54,4 @@ class Task(models.Model):
 
     @property
     def remote_path(self):
-        return self.name
+        return self.path
