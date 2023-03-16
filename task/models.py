@@ -58,7 +58,7 @@ class Task(models.Model):
     )
     message = models.CharField(max_length=1000, editable=False)
     files = models.TextField(editable=False)
-    captcha = models.TextField(editable=False, default='')
+    captcha = models.BinaryField(editable=False, default=b'')
 
     class Meta:
         indexes = [

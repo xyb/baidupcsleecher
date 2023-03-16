@@ -1,5 +1,7 @@
 from json import loads
+from io import BytesIO
 
+from django.http import HttpResponse
 from django_filters import rest_framework as filters
 from rest_framework import mixins, viewsets
 from rest_framework.response import Response
@@ -27,7 +29,7 @@ class TaskViewSet(mixins.CreateModelMixin,
     @action(detail=True)
     def captcha(self, request, pk=None):
         task = self.get_object()
-        return Response(task.captcha)
+        return HttpResponse(BytesIO(task.captcha), content_type="image/jpeg")
 
     @action(methods=['post'], detail=True)
     def captcha_code(self, request, pk=None):
