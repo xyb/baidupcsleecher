@@ -10,6 +10,22 @@ from task.models import Task
 from task.utils import cookies2dict
 
 
+def callback_save_captcha(task, captcha):
+    task.captcha_required = True
+    task.captcha = captcha
+    task.save()
+
+
+def callback_get_captcha_code(task):
+    while True:
+        new = Task.objects.get(task.id)
+        if new.captcha_code:
+            new.captcha_required = False
+            new.save()
+            return new.captcha_code
+        sleep(settings.DOWNLOADER_SLEEP_SECONDS)
+
+
 def leech(client, task):
     print(f"start leech {task.shared_link} to {task.data_path}")
     task.status = Task.Status.STARTED
@@ -20,13 +36,12 @@ def leech(client, task):
     message = ""
     try:
         print(task.remote_path)
-        # TODO avoid save same link multiple time
-        # TODO expose captcha image and re-save link
-        # TODO split transfer into a runner to improve repsonse speed
         client.save_shared_link(
             task.remote_path,
             task.shared_link,
             task.shared_password,
+            callback_save_captcha=lambda c: callback_save_captcha(task, c),
+            callback_get_captcha_code=lambda: callback_get_captcha_code(task),
         )
         task.transfer_completed_at = timezone.now()
         task.save()
