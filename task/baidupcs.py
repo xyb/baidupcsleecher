@@ -43,8 +43,8 @@ class BaiduPCS:
                 continue
             remote_path = str(Path(remote_dir) / file['path'])
             source_sub_path = remote_path[len(remote_dir) + 1:]
-            local_dir = (Path(local_dir) / source_sub_path).parent
-            self.download_file(remote_path, local_dir, sample_size)
+            local_dir_ = (Path(local_dir) / source_sub_path).parent
+            self.download_file(remote_path, local_dir_, sample_size)
 
     def download_file(self, remote_path, local_dir, sample_size=0):
         local_path = Path(local_dir) / basename(remote_path)
