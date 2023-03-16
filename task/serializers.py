@@ -23,4 +23,6 @@ class TaskSerializer(serializers.HyperlinkedModelSerializer):
             "full_downloaded_at",
             "failed",
             "message",
+            "captcha_required",
+            "captcha",
         ]

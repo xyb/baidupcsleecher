@@ -16,17 +16,31 @@ def leech(client, task):
     task.started_at = timezone.now()
     task.save()
 
+    def callback_save_captcha(content):
+        task.captcha_required = True
+        task.captcha = content
+        open('/tmp/captcha.png', 'wb').write(content)
+        task.save()
+
+    def callback_get_captcha_code():
+        while True:
+            new = Task.objects.get(id=task.id)
+            if new.captcha_code:
+                new.captcha_required = False
+                new.save()
+                return new.captcha_code
+            sleep(settings.DOWNLOADER_SLEEP_SECONDS)
+
     failed = False
     message = ""
     try:
         print(task.remote_path)
-        # TODO avoid save same link multiple time
-        # TODO expose captcha image and re-save link
-        # TODO split transfer into a runner to improve repsonse speed
         client.save_shared_link(
             task.remote_path,
             task.shared_link,
             task.shared_password,
+            callback_save_captcha=callback_save_captcha,
+            callback_get_captcha_code=callback_get_captcha_code,
         )
         task.transfer_completed_at = timezone.now()
         task.save()

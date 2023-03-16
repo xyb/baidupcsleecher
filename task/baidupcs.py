@@ -29,13 +29,17 @@ class BaiduPCS:
                 is_file=file.is_file,
                 size=file.size,
                 md5=file.md5,
-                #ctime=file.ctime,
-                #mtime=file.mtime,
+                # ctime=file.ctime,
+                # mtime=file.mtime,
             ))
         return result
 
-    def save_shared_link(self, remote_dir, link, password=None):
-        save_shared(self.api, link, remote_dir, password=password)
+    def save_shared_link(self, remote_dir, link, password=None,
+                         callback_save_captcha=None,
+                         callback_get_captcha_code=None):
+        save_shared(self.api, link, remote_dir, password=password,
+                    callback_save_captcha=callback_save_captcha,
+                    callback_get_captcha_code=callback_get_captcha_code)
 
     def download_dir(self, remote_dir, local_dir, sample_size=0):
         for file in self.list_files(remote_dir):
@@ -119,7 +123,9 @@ def save_shared(
     shared_url,
     remotedir,
     password=None,
-    show_vcode=False,
+    show_vcode=True,
+    callback_save_captcha=None,
+    callback_get_captcha_code=None,
 ):
     assert remotedir.startswith("/"), "`remotedir` must be an absolute path"
 
@@ -127,7 +133,10 @@ def save_shared(
 
     # Vertify with password
     if password:
-        api.access_shared(shared_url, password, show_vcode=show_vcode)
+        access_shared(api, shared_url, password,
+                      callback_save_captcha,
+                      callback_get_captcha_code,
+                      show_vcode=show_vcode)
 
     shared_paths = deque(api.shared_paths(shared_url))
 
@@ -220,3 +229,35 @@ def list_all_sub_paths(
             break
         page += 1
     return sub_paths
+
+
+def access_shared(
+    api,
+    shared_url: str,
+    password: str,
+    callback_save_captcha=None,
+    callback_get_captcha_code=None,
+    vcode_str: str = "",
+    vcode: str = "",
+    show_vcode: bool = True,
+):
+    while True:
+        try:
+            api._baidupcs.access_shared(shared_url, password, vcode_str, vcode)
+            return
+        except BaiduPCSError as err:
+            if err.error_code not in (-9, -62):
+                raise err
+            if show_vcode:
+                if err.error_code == -62:  # -62: '可能需要输入验证码'
+                    print("captcha needed!]")
+                if err.error_code == -9:
+                    print("captcha is incorrect!")
+                vcode_str, vcode_img_url = api.getcaptcha(shared_url)
+                print(vcode_str, vcode_img_url)
+                content = api.get_vcode_img(vcode_img_url, shared_url)
+                print(repr(content))
+                callback_save_captcha(content)
+                vcode = callback_get_captcha_code()
+            else:
+                raise err
