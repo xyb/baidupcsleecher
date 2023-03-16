@@ -37,7 +37,7 @@ def leech(client, task):
 
         client.leech(
             remote_dir=task.remote_path,
-            local_dir=task.data_path,
+            local_dir=settings.DATA_DIR / task.sample_path,
             sample_size=10240,
         )
         task.sample_downloaded_at = timezone.now()
