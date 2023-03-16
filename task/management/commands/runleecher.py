@@ -21,6 +21,9 @@ def leech(client, task):
     message = ""
     try:
         print(task.remote_path)
+        # TODO avoid save same link multiple time
+        # TODO expose captcha image and re-save link
+        # TODO split transfer into a runner to improve repsonse speed
         client.save_shared_link(
             task.remote_path,
             task.shared_link,
