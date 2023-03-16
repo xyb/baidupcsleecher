@@ -1,3 +1,4 @@
+from json import dumps
 from pathlib import Path
 from os import makedirs
 
@@ -78,3 +79,15 @@ class Task(models.Model):
     @property
     def remote_path(self):
         return str(Path(settings.REMOTE_LEECHER_DIR) / self.path)
+
+    def set_files(self, files):
+        remote_base_dir = str(Path(settings.REMOTE_LEECHER_DIR) / self.path)
+        file_list = []
+        for file in files:
+            path = file['path']
+            if path.startswith(remote_base_dir):
+                # strip remote base dir
+                sub_path = file['path'][len(remote_base_dir):].lstrip('/')
+                file['path'] = sub_path
+            file_list.append(file)
+        self.files = dumps(file_list)
