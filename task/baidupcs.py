@@ -29,8 +29,8 @@ class BaiduPCS:
                 is_file=file.is_file,
                 size=file.size,
                 md5=file.md5,
-                ctime=file.ctime,
-                mtime=file.mtime,
+                #ctime=file.ctime,
+                #mtime=file.mtime,
             ))
         return result
 
@@ -42,11 +42,13 @@ class BaiduPCS:
             if not file['is_file']:
                 continue
             remote_path = file['path']
-            local_path = Path(local_dir) / basename(remote_path)
-            self.download_file(remote_path, local_path, sample_size)
+            source_sub_path = remote_path[len(remote_dir) + 1:]
+            local_dir = (Path(local_dir) / source_sub_path).parent
+            self.download_file(remote_path, local_dir, sample_size)
 
     def download_file(self, remote_path, local_dir, sample_size=0):
         local_path = Path(local_dir) / basename(remote_path)
+        print(f'  {remote_path} -> {local_path}')
 
         if not local_path.parent.exists():
             local_path.parent.mkdir(parents=True)

@@ -35,6 +35,7 @@ def leech(client, task):
         task.save()
         print(f"list {task.shared_link} files succeeded.")
 
+        print(f"downloading samples...")
         client.leech(
             remote_dir=task.remote_path,
             local_dir=settings.DATA_DIR / task.sample_path,
@@ -44,6 +45,7 @@ def leech(client, task):
         task.save()
         print(f"sample of {task.shared_link} downloaded.")
 
+        print(f"downloading...")
         client.leech(
             remote_dir=task.remote_path,
             local_dir=task.data_path,
