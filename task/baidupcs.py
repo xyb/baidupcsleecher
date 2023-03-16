@@ -41,7 +41,7 @@ class BaiduPCS:
         for file in self.list_files(remote_dir):
             if not file['is_file']:
                 continue
-            remote_path = file['path']
+            remote_path = str(Path(remote_dir) / file['path'])
             source_sub_path = remote_path[len(remote_dir) + 1:]
             local_dir = (Path(local_dir) / source_sub_path).parent
             self.download_file(remote_path, local_dir, sample_size)
