@@ -32,7 +32,7 @@ class TaskViewSet(mixins.CreateModelMixin,
     @action(methods=['post'], detail=True)
     def captcha_code(self, request, pk=None):
         task = self.get_object()
-        code = request.DATA['code']
+        code = request.data['code']
         task.captcha_code = code
         task.save()
-        return Response(task.captcha)
+        return Response(dict(captch_code=task.captcha_code))

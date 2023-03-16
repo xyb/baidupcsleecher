@@ -38,8 +38,8 @@ class BaiduPCS:
                          callback_save_captcha=None,
                          callback_get_captcha_code=None):
         save_shared(self.api, link, remote_dir, password=password,
-                    callback_save_captcha=None,
-                    callback_get_captcha_code=None)
+                    callback_save_captcha=callback_save_captcha,
+                    callback_get_captcha_code=callback_get_captcha_code)
 
     def download_dir(self, remote_dir, local_dir, sample_size=0):
         for file in self.list_files(remote_dir):
@@ -123,7 +123,7 @@ def save_shared(
     shared_url,
     remotedir,
     password=None,
-    show_vcode=False,
+    show_vcode=True,
     callback_save_captcha=None,
     callback_get_captcha_code=None,
 ):
