@@ -1,4 +1,5 @@
 from time import sleep
+import sys
 import traceback
 
 from django.conf import settings
@@ -34,7 +35,6 @@ def leech(client, task):
     failed = False
     message = ""
     try:
-        print(task.remote_path)
         client.save_shared_link(
             task.remote_path,
             task.shared_link,
@@ -75,8 +75,8 @@ def leech(client, task):
         failed = True
         tb = traceback.format_exc()
         message = f"{e}"
-        print(message)
-        print(tb)
+        print(message, file=sys.stderr)
+        print(tb, file=sys.stderr)
 
     task.status = Task.Status.FINISHED
     task.finished_at = timezone.now()

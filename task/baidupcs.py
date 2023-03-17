@@ -1,3 +1,4 @@
+from time import sleep
 from functools import cache
 from os.path import basename
 from os import makedirs
@@ -19,8 +20,19 @@ class BaiduPCS:
         self.api = BaiduPCSApi(bduss=bduss, cookies=cookies)
 
     @cache
-    def list_files(self, remote_dir):
-        files = self.api.list(remote_dir, recursive=True)
+    def list_files(self, remote_dir, retry=3):
+        while True:
+            try:
+                files = self.api.list(remote_dir, recursive=True)
+                break
+            except BaiduPCSError as err:
+                if err.error_code == 31066 and retry > 0:
+                    print(f"list {remote_dir} failed, retry {retry}: {err}")
+                    retry -= 1
+                    sleep(0.5)
+                    continue
+                raise err
+
         result = []
         for file in files:
             result.append(dict(
@@ -250,14 +262,15 @@ def access_shared(
                 raise err
             if show_vcode:
                 if err.error_code == -62:  # -62: '可能需要输入验证码'
-                    print("captcha needed!]")
+                    print("captcha needed!")
                 if err.error_code == -9:
                     print("captcha is incorrect!")
                 vcode_str, vcode_img_url = api.getcaptcha(shared_url)
-                print(vcode_str, vcode_img_url)
+                print(f"captcha: {vcode_str}, url {vcode_img_url}")
                 content = api.get_vcode_img(vcode_img_url, shared_url)
-                print(repr(content))
+                # print(repr(content))
                 callback_save_captcha(content)
                 vcode = callback_get_captcha_code()
+                print(f"captcha code received: {vcode}")
             else:
                 raise err
