@@ -2,5 +2,6 @@ Django
 djangorestframework
 django-cors-headers
 django-filter
+djangorestframework-link-header-pagination
 whitenoise
 BaiduPCS-Py
