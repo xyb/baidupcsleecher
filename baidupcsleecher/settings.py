@@ -59,6 +59,11 @@ DOWNLOADER_SLEEP_SECONDS = int(getenv("DOWNLOADER_SLEEP_SECONDS", "5"))
 PAN_BAIDU_BDUSS = getenv("PAN_BAIDU_BDUSS", "")
 PAN_BAIDU_COOKIES = getenv("PAN_BAIDU_COOKIES", "")
 
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'drf_link_header_pagination.LinkHeaderPagination',
+    'PAGE_SIZE': int(getenv("API_PAGE_SIZE", "20"))
+}
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
