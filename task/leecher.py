@@ -83,50 +83,65 @@ def handle_exception(task, e):
     return message
 
 
-def finish_task(task, failed, message):
+def task_failed(task, message):
     task.status = Task.Status.FINISHED
     task.finished_at = timezone.now()
-    task.failed = failed
+    task.failed = True
     task.message = message
     task.save()
 
 
-def leech(client, task):
-    start_leech(task)
-
-    failed = False
-    message = ""
-    try:
-        save_link(client, task)
-        set_files(client, task)
-        download_samples(client, task)
-        download_all(client, task)
-    except Exception as e:
-        failed = True
-        message = handle_exception(e)
-
-    finish_task(task, failed, message)
-
-
-def finish_transfer(task, failed, message):
-    task.status = Task.Status.FINISHED
+def finish_transfer(task):
+    task.status = Task.Status.TRANSFERED
     task.finished_at = timezone.now()
-    task.failed = failed
-    task.message = message
     task.save()
 
 
 def transfer(client, task):
     start_leech(task)
 
-    failed = False
-    message = ""
     try:
         save_link(client, task)
         set_files(client, task)
         download_samples(client, task)
     except Exception as e:
-        failed = True
-        message = handle_exception(e)
+        task_failed(task, handle_exception(e))
 
-    finish_transfer(task, failed, message)
+    finish_transfer(task)
+
+
+def finish_sampling(task):
+    task.status = Task.Status.SAMPLING_DOWNLOADED
+    task.finished_at = timezone.now()
+    task.save()
+
+
+def sampling(client, task):
+    start_leech(task)
+
+    try:
+        save_link(client, task)
+        set_files(client, task)
+        download_samples(client, task)
+    except Exception as e:
+        task_failed(task, handle_exception(e))
+
+    finish_transfer(task)
+
+
+def finish_task(task):
+    task.status = Task.Status.FINISHED
+    task.finished_at = timezone.now()
+    task.save()
+
+
+def leech(client, task):
+    start_leech(task)
+
+    try:
+        download_samples(client, task)
+        download_all(client, task)
+    except Exception as e:
+        task_failed(task, handle_exception(e))
+
+    finish_task(task)

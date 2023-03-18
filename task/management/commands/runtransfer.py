@@ -21,10 +21,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         client = get_baidupcs_client()
         while True:
-            tasks = Task.objects.filter(status=Task.Status.INITED)
-            for task in tasks:
+            for task in Task.get_sampling_downloaded():
                 transfer(client, task)
 
             if options["once"]:
                 return
-            sleep(settings.DOWNLOADER_SLEEP_SECONDS)
+            sleep(settings.RUNNER_SLEEP_SECONDS)
