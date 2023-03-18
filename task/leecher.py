@@ -29,7 +29,7 @@ def save_link(client, task):
                 new.captcha_required = False
                 new.save()
                 return new.captcha_code
-            sleep(settings.DOWNLOADER_SLEEP_SECONDS)
+            sleep(settings.RUNNER_SLEEP_SECONDS)
 
     client.save_shared_link(
         task.remote_path,
@@ -62,7 +62,7 @@ def download_samples(client, task):
     print(f"sample of {task.shared_link} downloaded.")
 
 
-def download_all(client, task):
+def download(client, task):
     print("downloading...")
     client.leech(
         remote_dir=task.remote_path,
@@ -75,10 +75,9 @@ def download_all(client, task):
 
 
 def handle_exception(task, e):
-    print(f"leech {task.shared_link} failed.")
-    tb = traceback.format_exc()
     message = f"{e}"
     print(message, file=sys.stderr)
+    tb = traceback.format_exc()
     print(tb, file=sys.stderr)
     return message
 
@@ -103,8 +102,8 @@ def transfer(client, task):
     try:
         save_link(client, task)
         set_files(client, task)
-        download_samples(client, task)
     except Exception as e:
+        print(f"transfer {task.shared_link} failed.")
         task_failed(task, handle_exception(e))
 
     finish_transfer(task)
@@ -120,13 +119,12 @@ def sampling(client, task):
     start_leech(task)
 
     try:
-        save_link(client, task)
-        set_files(client, task)
         download_samples(client, task)
     except Exception as e:
+        print(f"download sampling of {task.shared_link} failed.")
         task_failed(task, handle_exception(e))
 
-    finish_transfer(task)
+    finish_sampling(task)
 
 
 def finish_task(task):
@@ -139,9 +137,9 @@ def leech(client, task):
     start_leech(task)
 
     try:
-        download_samples(client, task)
-        download_all(client, task)
+        download(client, task)
     except Exception as e:
+        print(f"download all files of {task.shared_link} failed.")
         task_failed(task, handle_exception(e))
 
     finish_task(task)

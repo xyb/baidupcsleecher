@@ -9,7 +9,7 @@ from task.models import Task
 
 
 class Command(BaseCommand):
-    help = "run leecher"
+    help = "download all files."
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -21,7 +21,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         client = get_baidupcs_client()
         while True:
-            for task in Task.get_inited():
+            for task in Task.get_sampling_downloaded():
                 leech(client, task)
 
             if options["once"]:

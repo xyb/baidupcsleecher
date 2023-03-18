@@ -9,7 +9,7 @@ from task.models import Task
 
 
 class Command(BaseCommand):
-    help = "download sampling files"
+    help = "download sampling files."
 
     def add_arguments(self, parser):
         parser.add_argument(

@@ -9,7 +9,7 @@ from task.models import Task
 
 
 class Command(BaseCommand):
-    help = "run transfer, save shared_link to Baidu Pan"
+    help = "save shared link to Baidu Pan"
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -21,7 +21,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         client = get_baidupcs_client()
         while True:
-            for task in Task.get_sampling_downloaded():
+            for task in Task.get_inited():
                 transfer(client, task)
 
             if options["once"]:
