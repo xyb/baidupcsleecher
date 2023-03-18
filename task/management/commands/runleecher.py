@@ -1,3 +1,4 @@
+import logging
 from time import sleep
 
 from django.conf import settings
@@ -7,6 +8,7 @@ from task.baidupcs import get_baidupcs_client
 from task.leecher import leech
 from task.models import Task
 
+logger = logging.getLogger("runleecher")
 
 class Command(BaseCommand):
     help = "download all files."
@@ -19,6 +21,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        logger.info("leecher started.")
         client = get_baidupcs_client()
         while True:
             for task in Task.filter_sampling_downloaded():
