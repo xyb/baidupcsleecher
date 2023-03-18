@@ -92,7 +92,6 @@ def task_failed(task, message):
 
 def finish_transfer(task):
     task.status = Task.Status.TRANSFERED
-    task.finished_at = timezone.now()
     task.save()
 
 
@@ -111,7 +110,6 @@ def transfer(client, task):
 
 def finish_sampling(task):
     task.status = Task.Status.SAMPLING_DOWNLOADED
-    task.finished_at = timezone.now()
     task.save()
 
 
