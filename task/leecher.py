@@ -105,7 +105,7 @@ def transfer(client, task):
         set_files(client, task)
     except Exception as e:
         logging.error(f"transfer {task.shared_link} failed.")
-        task_failed(task, handle_exception(e))
+        task_failed(task, handle_exception(task, e))
 
     finish_transfer(task)
 
@@ -122,7 +122,7 @@ def sampling(client, task):
         download_samples(client, task)
     except Exception as e:
         logging.error(f"download sampling of {task.shared_link} failed.")
-        task_failed(task, handle_exception(e))
+        task_failed(task, handle_exception(task, e))
 
     finish_sampling(task)
 
@@ -140,6 +140,6 @@ def leech(client, task):
         download(client, task)
     except Exception as e:
         logging.error(f"download all files of {task.shared_link} failed.")
-        task_failed(task, handle_exception(e))
+        task_failed(task, handle_exception(task, e))
 
     finish_task(task)
