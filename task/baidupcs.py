@@ -1,3 +1,4 @@
+import logging
 import re
 from collections import deque
 from functools import cache
@@ -13,6 +14,7 @@ from baidupcs_py.baidupcs import PCS_UA, BaiduPCSApi, BaiduPCSError
 from task.utils import cookies2dict
 
 SHARED_URL_PREFIX = "https://pan.baidu.com/s/"
+logger = logging.getLogger("baibupcs")
 
 
 def get_baidupcs_client():
@@ -36,7 +38,7 @@ class BaiduPCS:
                 break
             except BaiduPCSError as err:
                 if err.error_code == 31066 and retry > 0:
-                    print(f"list {remote_dir} failed, retry {retry}: {err}")
+                    logging.error(f"list {remote_dir} failed, retry {retry}: {err}")
                     retry -= 1
                     sleep(0.5)
                     continue
@@ -73,18 +75,18 @@ class BaiduPCS:
 
     def download_file(self, remote_path, local_dir, sample_size=0):
         local_path = Path(local_dir) / basename(remote_path)
-        print(f'  {remote_path} -> {local_path}')
+        logger.info(f'  {remote_path} -> {local_path}')
 
         if not local_path.parent.exists():
             local_path.parent.mkdir(parents=True)
 
         if local_path.exists():
-            print(f"{local_path} is ready existed.")
+            logger.info(f"{local_path} is ready existed.")
             return
 
         url = self.api.download_link(remote_path)
         if not url:
-            print(remote_path)
+            logger.info(remote_path)
             return
 
         headers = {
@@ -182,7 +184,7 @@ def save_shared(
         if shared_path.is_file and remotepath_exists(
             api, PurePosixPath(shared_path.path).name, rd
         ):
-            print(f"WARNING: {shared_path.path} has be in {rd}")
+            logger.warning(f"WARNING: {shared_path.path} has be in {rd}")
             continue
         uk, share_id, bdstoken = (
             shared_path.uk,
@@ -197,11 +199,11 @@ def save_shared(
             api.transfer_shared_paths(
                 rd, [shared_path.fs_id], uk, share_id, bdstoken, shared_url
             )
-            print(f"save: {shared_path.path} to {rd}")
+            logger.info(f"save: {shared_path.path} to {rd}")
             continue
         except BaiduPCSError as err:
             if err.error_code == 12:  # 12: "文件已经存在"
-                print(
+                logger.warning(
                     f"WARNING: error_code: {err.error_code}, "
                     "{shared_path.path} has be in {rd}"
                 )
@@ -212,7 +214,7 @@ def save_shared(
                 4,  # 4: "share transfer pcs error"
                 130,  # "转存文件数超限"
             ):
-                print(
+                logger.warning(
                     f"WARNING: error_code: {err.error_code},"
                     " {shared_path.path} "
                     "has more items and need to transfer one by one"
@@ -271,15 +273,15 @@ def access_shared(
                 raise err
             if show_vcode:
                 if err.error_code == -62:  # -62: '可能需要输入验证码'
-                    print("captcha needed!")
+                    logger.warning("captcha needed!")
                 if err.error_code == -9:
-                    print("captcha is incorrect!")
+                    logger.error("captcha is incorrect!")
                 vcode_str, vcode_img_url = api.getcaptcha(shared_url)
-                print(f"captcha: {vcode_str}, url {vcode_img_url}")
+                logger.debug(f"captcha: {vcode_str}, url {vcode_img_url}")
                 content = api.get_vcode_img(vcode_img_url, shared_url)
-                # print(repr(content))
+                # logger.debug(repr(content))
                 callback_save_captcha(content)
                 vcode = callback_get_captcha_code()
-                print(f"captcha code received: {vcode}")
+                logger.info(f"captcha code received: {vcode}")
             else:
                 raise err

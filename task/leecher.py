@@ -1,4 +1,4 @@
-import sys
+import logging
 import traceback
 from time import sleep
 
@@ -7,9 +7,11 @@ from django.utils import timezone
 
 from task.models import Task
 
+logger = logging.getLogger(__name__)
+
 
 def start_leech(task):
-    print(f"start leech {task.shared_link} to {task.data_path}")
+    logger.info(f"start leech {task.shared_link} to {task.data_path}")
     task.status = Task.Status.STARTED
     task.started_at = timezone.now()
     task.save()
@@ -40,18 +42,18 @@ def save_link(client, task):
     )
     task.transfer_completed_at = timezone.now()
     task.save()
-    print(f"save {task.shared_link} succeeded.")
+    logger.info(f"save {task.shared_link} succeeded.")
 
 
 def set_files(client, task):
     task.set_files(list(client.list_files(task.remote_path)))
     task.file_listed_at = timezone.now()
     task.save()
-    print(f"list {task.shared_link} files succeeded.")
+    logger.info(f"list {task.shared_link} files succeeded.")
 
 
 def download_samples(client, task):
-    print("downloading samples...")
+    logger.info("downloading samples...")
     client.leech(
         remote_dir=task.remote_path,
         local_dir=settings.DATA_DIR / task.sample_path,
@@ -59,11 +61,11 @@ def download_samples(client, task):
     )
     task.sample_downloaded_at = timezone.now()
     task.save()
-    print(f"sample of {task.shared_link} downloaded.")
+    logger.info(f"sample of {task.shared_link} downloaded.")
 
 
 def download(client, task):
-    print("downloading...")
+    logger.info("downloading...")
     client.leech(
         remote_dir=task.remote_path,
         local_dir=task.data_path,
@@ -71,14 +73,14 @@ def download(client, task):
     )
     task.full_downloaded_at = timezone.now()
     task.save()
-    print(f"leech {task.shared_link} succeeded.")
+    logger.info(f"leech {task.shared_link} succeeded.")
 
 
 def handle_exception(task, e):
     message = f"{e}"
-    print(message, file=sys.stderr)
+    logger.error(message)
     tb = traceback.format_exc()
-    print(tb, file=sys.stderr)
+    logger.error(tb)
     return message
 
 
@@ -102,7 +104,7 @@ def transfer(client, task):
         save_link(client, task)
         set_files(client, task)
     except Exception as e:
-        print(f"transfer {task.shared_link} failed.")
+        logging.error(f"transfer {task.shared_link} failed.")
         task_failed(task, handle_exception(e))
 
     finish_transfer(task)
@@ -119,7 +121,7 @@ def sampling(client, task):
     try:
         download_samples(client, task)
     except Exception as e:
-        print(f"download sampling of {task.shared_link} failed.")
+        logging.error(f"download sampling of {task.shared_link} failed.")
         task_failed(task, handle_exception(e))
 
     finish_sampling(task)
@@ -137,7 +139,7 @@ def leech(client, task):
     try:
         download(client, task)
     except Exception as e:
-        print(f"download all files of {task.shared_link} failed.")
+        logging.error(f"download all files of {task.shared_link} failed.")
         task_failed(task, handle_exception(e))
 
     finish_task(task)
