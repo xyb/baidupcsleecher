@@ -4,8 +4,8 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from task.baidupcs import get_baidupcs_client
-from task.models import Task
 from task.leecher import transfer
+from task.models import Task
 
 
 class Command(BaseCommand):

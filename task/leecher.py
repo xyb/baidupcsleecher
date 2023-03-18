@@ -1,6 +1,6 @@
-from time import sleep
 import sys
 import traceback
+from time import sleep
 
 from django.conf import settings
 from django.utils import timezone

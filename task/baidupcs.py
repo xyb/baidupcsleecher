@@ -1,17 +1,16 @@
-from time import sleep
-from functools import cache
-from os.path import basename
-from os import makedirs
 import re
 from collections import deque
+from functools import cache
+from os import makedirs
+from os.path import basename
 from pathlib import Path, PurePosixPath
-import requests
+from time import sleep
 
-from baidupcs_py.baidupcs import BaiduPCSApi, BaiduPCSError, PCS_UA
+import requests
 from django.conf import settings
 
+from baidupcs_py.baidupcs import PCS_UA, BaiduPCSApi, BaiduPCSError
 from task.utils import cookies2dict
-
 
 SHARED_URL_PREFIX = "https://pan.baidu.com/s/"
 
