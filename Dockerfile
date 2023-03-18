@@ -9,6 +9,7 @@ ENV \
   PIP_DEFAULT_TIMEOUT=100
 
 WORKDIR /app
+RUN pip install mysqlclient
 COPY ./requirements.txt /app/
 RUN pip install -r requirements.txt
 ADD . /app
