@@ -21,7 +21,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         client = get_baidupcs_client()
         while True:
-            for task in Task.get_sampling_downloaded():
+            for task in Task.filter_sampling_downloaded():
                 leech(client, task)
 
             if options["once"]:

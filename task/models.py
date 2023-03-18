@@ -103,13 +103,13 @@ class Task(models.Model):
         self.files = dumps(file_list)
 
     @classmethod
-    def get_inited(cls):
+    def filter_inited(cls):
         return cls.objects.filter(status=cls.Status.INITED)
 
     @classmethod
-    def get_transferd(cls):
+    def filter_transferd(cls):
         return cls.objects.filter(status=cls.Status.TRANSFERED)
 
     @classmethod
-    def get_sampling_downloaded(cls):
+    def filter_sampling_downloaded(cls):
         return cls.objects.filter(status=cls.Status.SAMPLING_DOWNLOADED)

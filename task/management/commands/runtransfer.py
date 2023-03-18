@@ -21,7 +21,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         client = get_baidupcs_client()
         while True:
-            for task in Task.get_inited():
+            for task in Task.filter_inited():
                 transfer(client, task)
 
             if options["once"]:
