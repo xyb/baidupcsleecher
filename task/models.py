@@ -1,6 +1,6 @@
 from json import dumps
-from pathlib import Path
 from os import makedirs
+from pathlib import Path
 
 from django.conf import settings
 from django.db import models
@@ -10,6 +10,8 @@ class Task(models.Model):
     class Status(models.TextChoices):
         INITED = "Inited"
         STARTED = "Started"
+        TRANSFERED = "Transfered"
+        SAMPLING_DOWNLOADED = "SampleDLed"
         FINISHED = "Finished"
 
     shared_link = models.CharField(max_length=100)
@@ -99,3 +101,15 @@ class Task(models.Model):
                 file['path'] = sub_path
             file_list.append(file)
         self.files = dumps(file_list)
+
+    @classmethod
+    def filter_inited(cls):
+        return cls.objects.filter(status=cls.Status.INITED)
+
+    @classmethod
+    def filter_transferd(cls):
+        return cls.objects.filter(status=cls.Status.TRANSFERED)
+
+    @classmethod
+    def filter_sampling_downloaded(cls):
+        return cls.objects.filter(status=cls.Status.SAMPLING_DOWNLOADED)

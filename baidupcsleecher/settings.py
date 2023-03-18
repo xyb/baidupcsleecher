@@ -55,7 +55,7 @@ INSTALLED_APPS = [
 # baidupcsleecher settings
 DATA_DIR = Path(getenv("DATA_DIR", "/tmp")).resolve()
 REMOTE_LEECHER_DIR = str(Path(getenv("REMOTE_LEECHER_DIR", "/leecher")).resolve())
-DOWNLOADER_SLEEP_SECONDS = int(getenv("DOWNLOADER_SLEEP_SECONDS", "5"))
+RUNNER_SLEEP_SECONDS = int(getenv("RUNNER_SLEEP_SECONDS", "5"))
 PAN_BAIDU_BDUSS = getenv("PAN_BAIDU_BDUSS", "")
 PAN_BAIDU_COOKIES = getenv("PAN_BAIDU_COOKIES", "")
 

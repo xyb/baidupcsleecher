@@ -8,6 +8,8 @@ python manage.py runserver 0.0.0.0:8000 &
 sleep 1
 echo
 
+python manage.py runtransfer &
+python manage.py runsamplingdownloader &
 python manage.py runleecher &
 echo
 
