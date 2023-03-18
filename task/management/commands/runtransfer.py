@@ -5,17 +5,17 @@ from django.core.management.base import BaseCommand
 
 from task.baidupcs import get_baidupcs_client
 from task.models import Task
-from task.leecher import leech
+from task.leecher import transfer
 
 
 class Command(BaseCommand):
-    help = "run leecher"
+    help = "run transfer, save shared_link to Baidu Pan"
 
     def add_arguments(self, parser):
         parser.add_argument(
             "--once",
             action="store_true",
-            help="run leecher for exists tasks and exit immediately.",
+            help="run transfer for exists tasks and exit immediately.",
         )
 
     def handle(self, *args, **options):
@@ -23,7 +23,7 @@ class Command(BaseCommand):
         while True:
             tasks = Task.objects.filter(status=Task.Status.INITED)
             for task in tasks:
-                leech(client, task)
+                transfer(client, task)
 
             if options["once"]:
                 return

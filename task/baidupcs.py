@@ -8,9 +8,19 @@ from pathlib import Path, PurePosixPath
 import requests
 
 from baidupcs_py.baidupcs import BaiduPCSApi, BaiduPCSError, PCS_UA
+from django.conf import settings
+
+from task.utils import cookies2dict
 
 
 SHARED_URL_PREFIX = "https://pan.baidu.com/s/"
+
+
+def get_baidupcs_client():
+    return BaiduPCS(
+        settings.PAN_BAIDU_BDUSS,
+        cookies2dict(settings.PAN_BAIDU_COOKIES),
+    )
 
 
 class BaiduPCS:
@@ -70,7 +80,7 @@ class BaiduPCS:
             local_path.parent.mkdir(parents=True)
 
         if local_path.exists():
-            print(f"[yellow]{local_path}[/yellow] is ready existed.")
+            print(f"{local_path} is ready existed.")
             return
 
         url = self.api.download_link(remote_path)
@@ -173,7 +183,7 @@ def save_shared(
         if shared_path.is_file and remotepath_exists(
             api, PurePosixPath(shared_path.path).name, rd
         ):
-            print(f"[yellow]WARNING[/]: {shared_path.path} has be in {rd}")
+            print(f"WARNING: {shared_path.path} has be in {rd}")
             continue
         uk, share_id, bdstoken = (
             shared_path.uk,
