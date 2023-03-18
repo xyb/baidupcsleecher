@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from .models import Task
+from .utils import get_url_query
 
 
 class TaskSerializer(serializers.HyperlinkedModelSerializer):
@@ -26,3 +27,10 @@ class TaskSerializer(serializers.HyperlinkedModelSerializer):
             "captcha_required",
             "captcha",
         ]
+
+    def validate(self, data):
+        shared_password = data.get('shared_password')
+        query_pwd = get_url_query(data['shared_link'], 'pwd')
+        if query_pwd and not shared_password:
+            data['shared_password'] = query_pwd
+        return data
