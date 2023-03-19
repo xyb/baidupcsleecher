@@ -1,8 +1,20 @@
+import logging
 import re
+import traceback
 from http.cookies import SimpleCookie
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import parse_qs, urlparse
 
 SHARED_URL_PREFIX = "https://pan.baidu.com/s/"
+
+logger = logging.getLogger(__name__)
+
+
+def handle_exception(task, exc):
+    message = f"{exc}"
+    logger.error(message)
+    tb = traceback.format_exc()
+    logger.error(tb)
+    return message
 
 
 def cookies2dict(cookie_string):
@@ -43,7 +55,7 @@ def parse_shared_link(url: str) -> str:
     ValueError: The shared url is not a valid url. https://test.com/xyb
     """
 
-    pwd = get_url_query(url, 'pwd') or ''
+    pwd = get_url_query(url, "pwd") or ""
 
     # For Standard url
     temp = r"pan\.baidu\.com/s/(.+?)(\?|$)"
@@ -62,4 +74,4 @@ def parse_shared_link(url: str) -> str:
 
 def unify_shared_link(url):
     result = parse_shared_link(url)
-    return SHARED_URL_PREFIX + result['id']
+    return SHARED_URL_PREFIX + result["id"]
