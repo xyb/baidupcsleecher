@@ -142,10 +142,11 @@ def leech(client, task):
 
     try:
         download(client, task)
-        callback(task, "files_downloaded")
     except Exception as e:
         logging.error(f"download all files of {task.shared_link} failed.")
         task_failed(task, handle_exception(task, e))
+        return
 
     finish_task(task)
+    callback(task, "files_downloaded")
     logger.info(f"leech {task.shared_link} to {task.data_path} succeed.")
