@@ -24,7 +24,11 @@ class TaskViewSet(mixins.CreateModelMixin,
     @action(detail=True)
     def files(self, request, pk=None):
         task = self.get_object()
-        return Response(loads(task.files))
+        if task.files:
+            files = loads(task.files)
+        else:
+            files = []
+        return Response([])
 
     @action(detail=True)
     def captcha(self, request, pk=None):
