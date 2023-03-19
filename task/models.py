@@ -14,6 +14,7 @@ class Task(models.Model):
         SAMPLING_DOWNLOADED = "SampleDLed"
         FINISHED = "Finished"
 
+    shared_id = models.CharField(max_length=50, default="")
     shared_link = models.CharField(max_length=100)
     shared_password = models.CharField(max_length=4, blank=True, null=True)
     status = models.CharField(
@@ -70,9 +71,7 @@ class Task(models.Model):
 
     @property
     def path(self):
-        time = self.created_at.isoformat()[:19]
-        time = time.replace('-', '').replace(':', '')
-        return f"{time}_{self.id}"
+        return f"{self.shared_id}.{self.shared_password}"
 
     @property
     def sample_path(self):

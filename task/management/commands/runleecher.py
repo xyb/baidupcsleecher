@@ -10,6 +10,7 @@ from task.models import Task
 
 logger = logging.getLogger("runleecher")
 
+
 class Command(BaseCommand):
     help = "download all files."
 

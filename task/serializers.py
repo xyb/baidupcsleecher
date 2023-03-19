@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .models import Task
-from .utils import get_url_query
+from .utils import parse_shared_link
 
 
 class TaskSerializer(serializers.HyperlinkedModelSerializer):
@@ -11,6 +11,7 @@ class TaskSerializer(serializers.HyperlinkedModelSerializer):
             "id",
             "path",
             "sample_path",
+            "shared_id",
             "shared_link",
             "shared_password",
             "status",
@@ -30,7 +31,8 @@ class TaskSerializer(serializers.HyperlinkedModelSerializer):
 
     def validate(self, data):
         shared_password = data.get('shared_password')
-        query_pwd = get_url_query(data['shared_link'], 'pwd')
-        if query_pwd and not shared_password:
-            data['shared_password'] = query_pwd
+        link = parse_shared_link(data['shared_link'])
+        data['shared_id'] = link['id']
+        if not shared_password and link['password']:
+            data['shared_password'] = link['password']
         return data
