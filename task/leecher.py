@@ -1,11 +1,12 @@
 import logging
-import traceback
 from time import sleep
 
 from django.conf import settings
 from django.utils import timezone
 
-from task.models import Task
+from .callback import callback
+from .models import Task
+from .utils import handle_exception
 
 logger = logging.getLogger(__name__)
 
@@ -20,8 +21,9 @@ def save_link(client, task):
     def save_captcha(content):
         task.captcha_required = True
         task.captcha = content
-        open('/tmp/captcha.png', 'wb').write(content)
+        open("/tmp/captcha.png", "wb").write(content)
         task.save()
+        callback(task, "captcha_required")
 
     def get_captcha_code():
         while True:
@@ -32,8 +34,9 @@ def save_link(client, task):
                 return new.captcha_code
             sleep(settings.RUNNER_SLEEP_SECONDS)
 
-    if ((settings.TRANSFER_POLICY == 'if_not_present') and
-            client.list_files(task.remote_path, retry=0, fail_silent=True)):
+    if (settings.TRANSFER_POLICY == "if_not_present") and client.list_files(
+        task.remote_path, retry=0, fail_silent=True
+    ):
         logger.info(f"save {task.shared_link} skipped, already exists.")
     else:
         client.save_shared_link(
@@ -46,6 +49,7 @@ def save_link(client, task):
     task.transfer_completed_at = timezone.now()
     task.save()
     logger.info(f"save {task.shared_link} succeeded.")
+    callback(task, "link_saved")
 
 
 def set_files(client, task):
@@ -53,6 +57,7 @@ def set_files(client, task):
     task.file_listed_at = timezone.now()
     task.save()
     logger.info(f"list {task.shared_link} files succeeded.")
+    callback(task, "files_ready")
 
 
 def download_samples(client, task):
@@ -65,6 +70,7 @@ def download_samples(client, task):
     task.sample_downloaded_at = timezone.now()
     task.save()
     logger.info(f"sample of {task.shared_link} downloaded.")
+    callback(task, "sampling_downloaded")
 
 
 def download(client, task):
@@ -77,14 +83,6 @@ def download(client, task):
     task.full_downloaded_at = timezone.now()
     task.save()
     logger.info(f"leech {task.shared_link} succeeded.")
-
-
-def handle_exception(task, e):
-    message = f"{e}"
-    logger.error(message)
-    tb = traceback.format_exc()
-    logger.error(tb)
-    return message
 
 
 def task_failed(task, message):
@@ -144,6 +142,7 @@ def leech(client, task):
 
     try:
         download(client, task)
+        callback(task, "files_downloaded")
     except Exception as e:
         logging.error(f"download all files of {task.shared_link} failed.")
         task_failed(task, handle_exception(task, e))

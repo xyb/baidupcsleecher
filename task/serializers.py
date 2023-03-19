@@ -30,9 +30,9 @@ class TaskSerializer(serializers.HyperlinkedModelSerializer):
         ]
 
     def validate(self, data):
-        shared_password = data.get('shared_password')
-        link = parse_shared_link(data['shared_link'])
-        data['shared_id'] = link['id']
-        if not shared_password and link['password']:
-            data['shared_password'] = link['password']
+        shared_password = data.get("shared_password")
+        link = parse_shared_link(data["shared_link"])
+        data["shared_id"] = link["id"]
+        if not shared_password and link["password"]:
+            data["shared_password"] = link["password"]
         return data

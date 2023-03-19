@@ -9,7 +9,8 @@ import requests
 from django.conf import settings
 
 from baidupcs_py.baidupcs import PCS_UA, BaiduPCSApi, BaiduPCSError
-from task.utils import cookies2dict, unify_shared_link
+
+from .utils import cookies2dict, unify_shared_link
 
 logger = logging.getLogger("baibupcs")
 
@@ -44,36 +45,48 @@ class BaiduPCS:
 
         result = []
         for file in files:
-            result.append(dict(
-                path=file.path,
-                is_dir=file.is_dir,
-                is_file=file.is_file,
-                size=file.size,
-                md5=file.md5,
-                # ctime=file.ctime,
-                # mtime=file.mtime,
-            ))
+            result.append(
+                dict(
+                    path=file.path,
+                    is_dir=file.is_dir,
+                    is_file=file.is_file,
+                    size=file.size,
+                    md5=file.md5,
+                    # ctime=file.ctime,
+                    # mtime=file.mtime,
+                )
+            )
         return result
 
-    def save_shared_link(self, remote_dir, link, password=None,
-                         callback_save_captcha=None,
-                         callback_get_captcha_code=None):
-        save_shared(self.api, link, remote_dir, password=password,
-                    callback_save_captcha=callback_save_captcha,
-                    callback_get_captcha_code=callback_get_captcha_code)
+    def save_shared_link(
+        self,
+        remote_dir,
+        link,
+        password=None,
+        callback_save_captcha=None,
+        callback_get_captcha_code=None,
+    ):
+        save_shared(
+            self.api,
+            link,
+            remote_dir,
+            password=password,
+            callback_save_captcha=callback_save_captcha,
+            callback_get_captcha_code=callback_get_captcha_code,
+        )
 
     def download_dir(self, remote_dir, local_dir, sample_size=0):
         for file in self.list_files(remote_dir):
-            if not file['is_file']:
+            if not file["is_file"]:
                 continue
-            remote_path = str(Path(remote_dir) / file['path'])
-            source_sub_path = remote_path[len(remote_dir) + 1:]
+            remote_path = str(Path(remote_dir) / file["path"])
+            source_sub_path = remote_path[len(remote_dir) + 1 :]
             local_dir_ = (Path(local_dir) / source_sub_path).parent
             self.download_file(remote_path, local_dir_, sample_size)
 
     def download_file(self, remote_path, local_dir, sample_size=0):
         local_path = Path(local_dir) / basename(remote_path)
-        logger.info(f'  {remote_path} -> {local_path}')
+        logger.info(f"  {remote_path} -> {local_path}")
 
         if not local_path.parent.exists():
             local_path.parent.mkdir(parents=True)
@@ -95,7 +108,7 @@ class BaiduPCS:
 
         resp = requests.get(url, headers=headers, stream=True)
         total = 0
-        with open(local_path, 'wb') as f:
+        with open(local_path, "wb") as f:
             for chunk in resp.iter_content(chunk_size=10240):
                 if chunk:
                     f.write(chunk)
@@ -111,9 +124,7 @@ class BaiduPCS:
         self.download_dir(remote_dir, local_dir, sample_size=sample_size)
 
 
-def remotepath_exists(
-    api, name: str, rd: str, _cache={}
-) -> bool:
+def remotepath_exists(api, name: str, rd: str, _cache={}) -> bool:
     names = _cache.get(rd)
     if not names:
         names = set([PurePosixPath(sp.path).name for sp in api.list(rd)])
@@ -136,10 +147,14 @@ def save_shared(
 
     # Vertify with password
     if password:
-        access_shared(api, shared_url, password,
-                      callback_save_captcha,
-                      callback_get_captcha_code,
-                      show_vcode=show_vcode)
+        access_shared(
+            api,
+            shared_url,
+            password,
+            callback_save_captcha,
+            callback_get_captcha_code,
+            show_vcode=show_vcode,
+        )
 
     shared_paths = deque(api.shared_paths(shared_url))
 

@@ -61,7 +61,7 @@ class Task(models.Model):
     )
     message = models.CharField(max_length=1000, editable=False)
     files = models.TextField(editable=False)
-    captcha = models.BinaryField(editable=False, default=b'')
+    captcha = models.BinaryField(editable=False, default=b"")
 
     class Meta:
         indexes = [
@@ -93,11 +93,11 @@ class Task(models.Model):
         remote_base_dir = str(Path(settings.REMOTE_LEECHER_DIR) / self.path)
         file_list = []
         for file in files:
-            path = file['path']
+            path = file["path"]
             if path.startswith(remote_base_dir):
                 # strip remote base dir
-                sub_path = file['path'][len(remote_base_dir):].lstrip('/')
-                file['path'] = sub_path
+                sub_path = file["path"][len(remote_base_dir) :].lstrip("/")
+                file["path"] = sub_path
             file_list.append(file)
         self.files = dumps(file_list)
 
