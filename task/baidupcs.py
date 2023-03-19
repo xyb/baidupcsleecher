@@ -1,7 +1,5 @@
 import logging
-import re
 from collections import deque
-from functools import cache
 from os import makedirs
 from os.path import basename
 from pathlib import Path, PurePosixPath
@@ -11,9 +9,8 @@ import requests
 from django.conf import settings
 
 from baidupcs_py.baidupcs import PCS_UA, BaiduPCSApi, BaiduPCSError
-from task.utils import cookies2dict
+from task.utils import cookies2dict, unify_shared_link
 
-SHARED_URL_PREFIX = "https://pan.baidu.com/s/"
 logger = logging.getLogger("baibupcs")
 
 
@@ -30,8 +27,7 @@ class BaiduPCS:
         self.cookies = cookies
         self.api = BaiduPCSApi(bduss=bduss, cookies=cookies)
 
-    @cache
-    def list_files(self, remote_dir, retry=3):
+    def list_files(self, remote_dir, retry=3, fail_silent=False):
         while True:
             try:
                 files = self.api.list(remote_dir, recursive=True)
@@ -42,6 +38,8 @@ class BaiduPCS:
                     retry -= 1
                     sleep(0.5)
                     continue
+                if fail_silent:
+                    return []
                 raise err
 
         result = []
@@ -113,24 +111,6 @@ class BaiduPCS:
         self.download_dir(remote_dir, local_dir, sample_size=sample_size)
 
 
-def _unify_shared_url(url: str) -> str:
-    """Unify input shared url"""
-
-    # For Standard url
-    temp = r"pan\.baidu\.com/s/(.+?)(\?|$)"
-    m = re.search(temp, url)
-    if m:
-        return SHARED_URL_PREFIX + m.group(1)
-
-    # For surl url
-    temp = r"baidu\.com.+?\?surl=(.+?)(\?|$)"
-    m = re.search(temp, url)
-    if m:
-        return SHARED_URL_PREFIX + "1" + m.group(1)
-
-    raise ValueError(f"The shared url is not a valid url. {url}")
-
-
 def remotepath_exists(
     api, name: str, rd: str, _cache={}
 ) -> bool:
@@ -152,7 +132,7 @@ def save_shared(
 ):
     assert remotedir.startswith("/"), "`remotedir` must be an absolute path"
 
-    shared_url = _unify_shared_url(shared_url)
+    shared_url = unify_shared_link(shared_url)
 
     # Vertify with password
     if password:

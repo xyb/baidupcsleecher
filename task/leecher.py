@@ -33,13 +33,17 @@ def save_link(client, task):
                 return new.captcha_code
             sleep(settings.RUNNER_SLEEP_SECONDS)
 
-    client.save_shared_link(
-        task.remote_path,
-        task.shared_link,
-        task.shared_password,
-        callback_save_captcha=save_captcha,
-        callback_get_captcha_code=get_captcha_code,
-    )
+    if ((settings.TRANSFER_POLICY == 'if_not_present') and
+            client.list_files(task.remote_path, retry=0, fail_silent=True)):
+        logger.info(f"save {task.shared_link} skipped, already exists.")
+    else:
+        client.save_shared_link(
+            task.remote_path,
+            task.shared_link,
+            task.shared_password,
+            callback_save_captcha=save_captcha,
+            callback_get_captcha_code=get_captcha_code,
+        )
     task.transfer_completed_at = timezone.now()
     task.save()
     logger.info(f"save {task.shared_link} succeeded.")
