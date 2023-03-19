@@ -10,8 +10,7 @@ from task.models import Task
 logger = logging.getLogger(__name__)
 
 
-def start_leech(task):
-    logger.info(f"start leech {task.shared_link} to {task.data_path}")
+def start_task(task):
     task.status = Task.Status.STARTED
     task.started_at = timezone.now()
     task.save()
@@ -102,7 +101,8 @@ def finish_transfer(task):
 
 
 def transfer(client, task):
-    start_leech(task)
+    logger.info(f"start transfer {task.shared_link} ...")
+    start_task(task)
 
     try:
         save_link(client, task)
@@ -112,6 +112,7 @@ def transfer(client, task):
         task_failed(task, handle_exception(task, e))
 
     finish_transfer(task)
+    logger.info(f"tranfer {task.shared_link} succeed.")
 
 
 def finish_sampling(task):
@@ -120,7 +121,7 @@ def finish_sampling(task):
 
 
 def sampling(client, task):
-    start_leech(task)
+    logger.info(f"start download sampling of {task.shared_link}")
 
     try:
         download_samples(client, task)
@@ -129,6 +130,7 @@ def sampling(client, task):
         task_failed(task, handle_exception(task, e))
 
     finish_sampling(task)
+    logger.info(f"download sampling of {task.shared_link} succeed.")
 
 
 def finish_task(task):
@@ -138,7 +140,7 @@ def finish_task(task):
 
 
 def leech(client, task):
-    start_leech(task)
+    logger.info(f"start leech {task.shared_link} to {task.data_path}")
 
     try:
         download(client, task)
@@ -147,3 +149,4 @@ def leech(client, task):
         task_failed(task, handle_exception(task, e))
 
     finish_task(task)
+    logger.info(f"leech {task.shared_link} to {task.data_path} succeed.")
