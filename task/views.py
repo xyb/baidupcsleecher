@@ -1,3 +1,4 @@
+import logging
 from io import BytesIO
 from json import loads
 
@@ -9,6 +10,9 @@ from rest_framework.response import Response
 
 from .models import Task
 from .serializers import TaskSerializer
+from .leecher import save_link
+
+logger = logging.getLogger(__name__)
 
 
 class TaskViewSet(
@@ -42,5 +46,12 @@ class TaskViewSet(
         task = self.get_object()
         code = request.data["code"]
         task.captcha_code = code
+        task.captcha_required = False
         task.save()
-        return Response(dict(captch_code=task.captcha_code))
+        logger.info(f"captcha code received: {code}")
+        try:
+            client = get_baidupcs_client()
+            save_link(client, task)
+        except Exception as exc:
+            return Response(error)
+        return Response(ok)

@@ -21,18 +21,8 @@ def save_link(client, task):
     def save_captcha(content):
         task.captcha_required = True
         task.captcha = content
-        open("/tmp/captcha.png", "wb").write(content)
         task.save()
         callback(task, "captcha_required")
-
-    def get_captcha_code():
-        while True:
-            new = Task.objects.get(id=task.id)
-            if new.captcha_code:
-                new.captcha_required = False
-                new.save()
-                return new.captcha_code
-            sleep(settings.RUNNER_SLEEP_SECONDS)
 
     if (settings.TRANSFER_POLICY == "if_not_present") and client.list_files(
         task.remote_path, retry=0, fail_silent=True
@@ -44,7 +34,7 @@ def save_link(client, task):
             task.shared_link,
             task.shared_password,
             callback_save_captcha=save_captcha,
-            callback_get_captcha_code=get_captcha_code,
+            task.captcha_code or "",
         )
     task.transfer_completed_at = timezone.now()
     task.save()
@@ -105,12 +95,13 @@ def transfer(client, task):
     try:
         save_link(client, task)
         set_files(client, task)
+        finish_transfer(task)
+        logger.info(f"tranfer {task.shared_link} succeed.")
+    except CaptchaRequired:
+        logging.info(f"captcha required: {task.shared_link}")
     except Exception as e:
         logging.error(f"transfer {task.shared_link} failed.")
         task_failed(task, handle_exception(task, e))
-
-    finish_transfer(task)
-    logger.info(f"tranfer {task.shared_link} succeed.")
 
 
 def finish_sampling(task):

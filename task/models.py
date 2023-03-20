@@ -4,6 +4,7 @@ from pathlib import Path
 
 from django.conf import settings
 from django.db import models
+from django.db.models import Q
 
 
 class Task(models.Model):
@@ -102,8 +103,12 @@ class Task(models.Model):
         self.files = dumps(file_list)
 
     @classmethod
-    def filter_inited(cls):
-        return cls.objects.filter(status=cls.Status.INITED)
+    def filter_ready_to_transfer(cls):
+        inited = Q(status=cls.Status.INITED)
+        # captcha_required = Q(status=cls.Status.STARTED, captcha_required=True)
+        # tasks = cls.objects.filter(inited | captcha_required)
+        tasks = cls.objects.filter(inited)
+        return tasks
 
     @classmethod
     def filter_transferd(cls):
