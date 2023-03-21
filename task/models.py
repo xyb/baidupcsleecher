@@ -4,6 +4,7 @@ from pathlib import Path
 
 from django.conf import settings
 from django.db import models
+from django.db.models import Q
 
 
 class Task(models.Model):
@@ -52,16 +53,25 @@ class Task(models.Model):
         editable=False,
     )
     failed = models.BooleanField(default=False, editable=False)
-    captcha_required = models.BooleanField(default=False, editable=False)
-    captcha_code = models.CharField(
-        max_length=12,
-        blank=True,
-        null=True,
-        editable=False,
-    )
     message = models.CharField(max_length=1000, editable=False)
     files = models.TextField(editable=False)
     captcha = models.BinaryField(editable=False, default=b"")
+    captcha_required = models.BooleanField(default=False, editable=False)
+    captcha_code = models.CharField(
+        max_length=12,
+        default="",
+        editable=False,
+    )
+    captcha_id = models.CharField(
+        max_length=100,
+        default="",
+        editable=False,
+    )
+    captcha_url = models.CharField(
+        max_length=200,
+        default="",
+        editable=False,
+    )
 
     class Meta:
         indexes = [
@@ -102,8 +112,12 @@ class Task(models.Model):
         self.files = dumps(file_list)
 
     @classmethod
-    def filter_inited(cls):
-        return cls.objects.filter(status=cls.Status.INITED)
+    def filter_ready_to_transfer(cls):
+        inited = Q(status=cls.Status.INITED)
+        # captcha_required = Q(status=cls.Status.STARTED, captcha_required=True)
+        # tasks = cls.objects.filter(inited | captcha_required)
+        tasks = cls.objects.filter(inited)
+        return tasks
 
     @classmethod
     def filter_transferd(cls):
@@ -112,3 +126,7 @@ class Task(models.Model):
     @classmethod
     def filter_sampling_downloaded(cls):
         return cls.objects.filter(status=cls.Status.SAMPLING_DOWNLOADED)
+
+    @property
+    def is_waiting_for_captcha_code(self):
+        return self.status == self.Status.STARTED and self.captcha_required

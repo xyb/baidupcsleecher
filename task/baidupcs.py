@@ -15,6 +15,10 @@ from .utils import cookies2dict, unify_shared_link
 logger = logging.getLogger("baibupcs")
 
 
+class CaptchaRequired(ValueError):
+    pass
+
+
 def get_baidupcs_client():
     return BaiduPCS(
         settings.PAN_BAIDU_BDUSS,
@@ -64,7 +68,8 @@ class BaiduPCS:
         link,
         password=None,
         callback_save_captcha=None,
-        callback_get_captcha_code=None,
+        captcha_id: str = "",
+        captcha_code: str = "",
     ):
         save_shared(
             self.api,
@@ -72,7 +77,8 @@ class BaiduPCS:
             remote_dir,
             password=password,
             callback_save_captcha=callback_save_captcha,
-            callback_get_captcha_code=callback_get_captcha_code,
+            captcha_id=captcha_id,
+            captcha_code=captcha_code,
         )
 
     def download_dir(self, remote_dir, local_dir, sample_size=0):
@@ -137,9 +143,9 @@ def save_shared(
     shared_url,
     remotedir,
     password=None,
-    show_vcode=True,
     callback_save_captcha=None,
-    callback_get_captcha_code=None,
+    captcha_id: str = "",
+    captcha_code: str = "",
 ):
     assert remotedir.startswith("/"), "`remotedir` must be an absolute path"
 
@@ -152,8 +158,8 @@ def save_shared(
             shared_url,
             password,
             callback_save_captcha,
-            callback_get_captcha_code,
-            show_vcode=show_vcode,
+            captcha_id,
+            captcha_code,
         )
 
     shared_paths = deque(api.shared_paths(shared_url))
@@ -254,29 +260,21 @@ def access_shared(
     shared_url: str,
     password: str,
     callback_save_captcha=None,
-    callback_get_captcha_code=None,
-    vcode_str: str = "",
-    vcode: str = "",
-    show_vcode: bool = True,
+    captcha_id: str = "",
+    captcha_code: str = "",
 ):
-    while True:
-        try:
-            api._baidupcs.access_shared(shared_url, password, vcode_str, vcode)
-            return
-        except BaiduPCSError as err:
-            if err.error_code not in (-9, -62):
-                raise err
-            if show_vcode:
-                if err.error_code == -62:  # -62: '可能需要输入验证码'
-                    logger.warning("captcha needed!")
-                if err.error_code == -9:
-                    logger.error("captcha is incorrect!")
-                vcode_str, vcode_img_url = api.getcaptcha(shared_url)
-                logger.debug(f"captcha: {vcode_str}, url {vcode_img_url}")
-                content = api.get_vcode_img(vcode_img_url, shared_url)
-                # logger.debug(repr(content))
-                callback_save_captcha(content)
-                vcode = callback_get_captcha_code()
-                logger.info(f"captcha code received: {vcode}")
-            else:
-                raise err
+    try:
+        api._baidupcs.access_shared(shared_url, password, captcha_id, captcha_code)
+    except BaiduPCSError as err:
+        if err.error_code not in (-9, -62):
+            raise err
+        if err.error_code == -62:  # -62: '可能需要输入验证码'
+            logger.warning("captcha needed!")
+        if err.error_code == -9:
+            logger.error("captcha is incorrect!")
+
+        captcha_id, captcha_img_url = api.getcaptcha(shared_url)
+        logger.debug(f"captcha: {captcha_id}, url {captcha_img_url}")
+        content = api.get_vcode_img(captcha_img_url, shared_url)
+        callback_save_captcha(captcha_id, captcha_img_url, content)
+        raise CaptchaRequired()

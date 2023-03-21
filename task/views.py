@@ -1,14 +1,19 @@
+import logging
 from io import BytesIO
 from json import loads
 
 from django.http import HttpResponse
 from django_filters import rest_framework as filters
-from rest_framework import mixins, viewsets
+from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from .baidupcs import get_baidupcs_client
+from .leecher import transfer
 from .models import Task
 from .serializers import TaskSerializer
+
+logger = logging.getLogger(__name__)
 
 
 class TaskViewSet(
@@ -40,7 +45,17 @@ class TaskViewSet(
     @action(methods=["post"], detail=True)
     def captcha_code(self, request, pk=None):
         task = self.get_object()
+        if not task.is_waiting_for_captcha_code:
+            return Response({"error": "captcha_code not required"},
+                            status=status.HTTP_400_BAD_REQUEST)
         code = request.data["code"]
         task.captcha_code = code
+        task.captcha_required = False
         task.save()
-        return Response(dict(captch_code=task.captcha_code))
+        logger.info(f"captcha code received: {code}")
+        try:
+            client = get_baidupcs_client()
+            transfer(client, task)
+        except Exception as exc:
+            return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(TaskSerializer(task).data)

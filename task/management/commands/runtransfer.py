@@ -25,7 +25,7 @@ class Command(BaseCommand):
         logger.info("transfer started.")
         client = get_baidupcs_client()
         while True:
-            for task in Task.filter_inited():
+            for task in Task.filter_ready_to_transfer():
                 transfer(client, task)
 
             if options["once"]:
