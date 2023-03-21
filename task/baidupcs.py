@@ -68,7 +68,8 @@ class BaiduPCS:
         link,
         password=None,
         callback_save_captcha=None,
-        vcode_str: str = "",
+        captcha_id: str = "",
+        captcha_code: str = "",
     ):
         save_shared(
             self.api,
@@ -76,7 +77,8 @@ class BaiduPCS:
             remote_dir,
             password=password,
             callback_save_captcha=callback_save_captcha,
-            vcode_str=vcode_str,
+            captcha_id=captcha_id,
+            captcha_code=captcha_code,
         )
 
     def download_dir(self, remote_dir, local_dir, sample_size=0):
@@ -142,7 +144,8 @@ def save_shared(
     remotedir,
     password=None,
     callback_save_captcha=None,
-    vcode_str: str = "",
+    captcha_id: str = "",
+    captcha_code: str = "",
 ):
     assert remotedir.startswith("/"), "`remotedir` must be an absolute path"
 
@@ -155,7 +158,8 @@ def save_shared(
             shared_url,
             password,
             callback_save_captcha,
-            vcode_str,
+            captcha_id,
+            captcha_code,
         )
 
     shared_paths = deque(api.shared_paths(shared_url))
@@ -256,11 +260,11 @@ def access_shared(
     shared_url: str,
     password: str,
     callback_save_captcha=None,
-    vcode_str: str = "",
-    vcode: str = "",
+    captcha_id: str = "",
+    captcha_code: str = "",
 ):
     try:
-        api._baidupcs.access_shared(shared_url, password, vcode_str, vcode)
+        api._baidupcs.access_shared(shared_url, password, captcha_id, captcha_code)
     except BaiduPCSError as err:
         if err.error_code not in (-9, -62):
             raise err
@@ -268,8 +272,9 @@ def access_shared(
             logger.warning("captcha needed!")
         if err.error_code == -9:
             logger.error("captcha is incorrect!")
-        vcode_str, vcode_img_url = api.getcaptcha(shared_url)
-        logger.debug(f"captcha: {vcode_str}, url {vcode_img_url}")
-        content = api.get_vcode_img(vcode_img_url, shared_url)
-        callback_save_captcha(content)
+
+        captcha_id, captcha_img_url = api.getcaptcha(shared_url)
+        logger.debug(f"captcha: {captcha_id}, url {captcha_img_url}")
+        content = api.get_vcode_img(captcha_img_url, shared_url)
+        callback_save_captcha(captcha_id, captcha_img_url, content)
         raise CaptchaRequired()

@@ -1,9 +1,9 @@
 import logging
-from time import sleep
 
 from django.conf import settings
 from django.utils import timezone
 
+from .baidupcs import CaptchaRequired
 from .callback import callback
 from .models import Task
 from .utils import handle_exception
@@ -18,9 +18,11 @@ def start_task(task):
 
 
 def save_link(client, task):
-    def save_captcha(content):
+    def save_captcha(captcha_id, captcha_img_url, content):
         task.captcha_required = True
         task.captcha = content
+        task.captcha_id = captcha_id
+        task.captcha_url = captcha_img_url
         task.save()
         callback(task, "captcha_required")
 
@@ -34,7 +36,8 @@ def save_link(client, task):
             task.shared_link,
             task.shared_password,
             callback_save_captcha=save_captcha,
-            task.captcha_code or "",
+            captcha_id=task.captcha_id or "",
+            captcha_code=task.captcha_code or "",
         )
     task.transfer_completed_at = timezone.now()
     task.save()

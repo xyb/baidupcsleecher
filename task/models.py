@@ -53,16 +53,25 @@ class Task(models.Model):
         editable=False,
     )
     failed = models.BooleanField(default=False, editable=False)
-    captcha_required = models.BooleanField(default=False, editable=False)
-    captcha_code = models.CharField(
-        max_length=12,
-        blank=True,
-        null=True,
-        editable=False,
-    )
     message = models.CharField(max_length=1000, editable=False)
     files = models.TextField(editable=False)
     captcha = models.BinaryField(editable=False, default=b"")
+    captcha_required = models.BooleanField(default=False, editable=False)
+    captcha_code = models.CharField(
+        max_length=12,
+        default="",
+        editable=False,
+    )
+    captcha_id = models.CharField(
+        max_length=100,
+        default="",
+        editable=False,
+    )
+    captcha_url = models.CharField(
+        max_length=200,
+        default="",
+        editable=False,
+    )
 
     class Meta:
         indexes = [
