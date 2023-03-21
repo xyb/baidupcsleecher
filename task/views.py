@@ -4,13 +4,14 @@ from json import loads
 
 from django.http import HttpResponse
 from django_filters import rest_framework as filters
-from rest_framework import mixins, viewsets
+from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from .baidupcs import get_baidupcs_client
+from .leecher import save_link
 from .models import Task
 from .serializers import TaskSerializer
-from .leecher import save_link
 
 logger = logging.getLogger(__name__)
 
@@ -53,5 +54,5 @@ class TaskViewSet(
             client = get_baidupcs_client()
             save_link(client, task)
         except Exception as exc:
-            return Response(error)
-        return Response(ok)
+            return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(TaskSerializer(task).data)
