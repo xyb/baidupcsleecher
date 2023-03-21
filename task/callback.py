@@ -10,6 +10,8 @@ logger = logging.getLogger(__name__)
 
 def callback(task, action):
     url = task.callback
+    if not url:
+        return
     json = TaskSerializer(instance=task)
     message = dict(action=action, task=json.data)
     print(message)
