@@ -126,3 +126,7 @@ class Task(models.Model):
     @classmethod
     def filter_sampling_downloaded(cls):
         return cls.objects.filter(status=cls.Status.SAMPLING_DOWNLOADED)
+
+    @property
+    def is_waiting_for_captcha_code(self):
+        return self.status == self.Status.STARTED and self.captcha_required

@@ -9,7 +9,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from .baidupcs import get_baidupcs_client
-from .leecher import save_link
+from .leecher import transfer
 from .models import Task
 from .serializers import TaskSerializer
 
@@ -45,6 +45,9 @@ class TaskViewSet(
     @action(methods=["post"], detail=True)
     def captcha_code(self, request, pk=None):
         task = self.get_object()
+        if not task.is_waiting_for_captcha_code:
+            return Response({"error": "captcha_code not required"},
+                            status=status.HTTP_400_BAD_REQUEST)
         code = request.data["code"]
         task.captcha_code = code
         task.captcha_required = False
@@ -52,7 +55,7 @@ class TaskViewSet(
         logger.info(f"captcha code received: {code}")
         try:
             client = get_baidupcs_client()
-            save_link(client, task)
+            transfer(client, task)
         except Exception as exc:
             return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(TaskSerializer(task).data)
