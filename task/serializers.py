@@ -37,3 +37,7 @@ class TaskSerializer(serializers.HyperlinkedModelSerializer):
         if not shared_password and link["password"]:
             data["shared_password"] = link["password"]
         return data
+
+
+class CaptchaCodeSerializer(serializers.Serializer):
+    code = serializers.CharField()

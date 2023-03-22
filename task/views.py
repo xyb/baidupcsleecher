@@ -7,11 +7,12 @@ from django_filters import rest_framework as filters
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 
 from .baidupcs import get_baidupcs_client
 from .leecher import transfer
 from .models import Task
-from .serializers import TaskSerializer
+from .serializers import TaskSerializer, CaptchaCodeSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -44,10 +45,14 @@ class TaskViewSet(
 
     @action(methods=["post"], detail=True)
     def captcha_code(self, request, pk=None):
+        serializer = CaptchaCodeSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
         task = self.get_object()
         if not task.is_waiting_for_captcha_code:
             return Response({"error": "captcha_code not required"},
                             status=status.HTTP_400_BAD_REQUEST)
+
         code = request.data["code"]
         task.captcha_code = code
         task.captcha_required = False
@@ -59,3 +64,8 @@ class TaskViewSet(
         except Exception as exc:
             return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(TaskSerializer(task).data)
+
+    def get_serializer(self, *args, **kwargs):
+        if self.action == 'captcha_code':
+            return CaptchaCodeSerializer(*args, **kwargs)
+        return super().get_serializer(*args, **kwargs)
