@@ -1,0 +1,29 @@
+name: lint
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    name: pre-commit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.x
+
+      - name: install pre-commit
+        run: pip install pre-commit
+
+      - name: pre-commit cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pre-commit
+          key: "${{ hashFiles('.pre-commit-config.yaml') }}"
+
+      - run: pre-commit run --all-files --show-diff-on-failure
