@@ -63,7 +63,7 @@ class Task(models.Model):
         editable=False,
     )
     captcha_id = models.CharField(
-        max_length=100,
+        max_length=200,
         default="",
         editable=False,
     )
