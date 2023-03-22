@@ -39,5 +39,10 @@ class TaskSerializer(serializers.HyperlinkedModelSerializer):
             data["shared_password"] = link["password"]
         return data
 
+
 class CaptchaCodeSerializer(serializers.Serializer):
     code = serializers.CharField()
+
+
+class FullDownloadNowSerializer(serializers.Serializer):
+    full_download_now = serializers.BooleanField()

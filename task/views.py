@@ -12,7 +12,8 @@ from rest_framework.response import Response
 from .baidupcs import get_baidupcs_client
 from .leecher import transfer
 from .models import Task
-from .serializers import CaptchaCodeSerializer, TaskSerializer
+from .serializers import (CaptchaCodeSerializer, FullDownloadNowSerializer,
+                          TaskSerializer)
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +75,18 @@ class TaskViewSet(
             return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(TaskSerializer(task).data)
 
+    @action(methods=["post"], detail=True)
+    def full_download_now(self, request, pk=None):
+        serializer = FullDownloadNowSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        task = self.get_object()
+        task.full_download_now = serializer.validated_data['full_download_now']
+        task.save()
+        return Response(TaskSerializer(task).data)
+
     def get_serializer(self, *args, **kwargs):
         if self.action == 'captcha_code':
             return CaptchaCodeSerializer(*args, **kwargs)
+        if self.action == 'full_download_now':
+            return FullDownloadNowSerializer(*args, **kwargs)
         return super().get_serializer(*args, **kwargs)
