@@ -1,4 +1,6 @@
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock
+from unittest.mock import Mock
+from unittest.mock import patch
 
 from django.urls import reverse
 from rest_framework import status
@@ -83,7 +85,7 @@ class TaskViewSetTestCase(APITestCase):
         task = Task.objects.get(pk=self.task.id)
         self.assertEqual(task.captcha_code, "1234")
         self.assertEqual(task.captcha_required, False)
-        self.assertEqual(task.status, task.Status.TRANSFERED)
+        self.assertEqual(task.status, task.Status.TRANSFERRED)
 
     def test_full_download_now_action(self):
         self.assertEqual(self.task.full_download_now, False)

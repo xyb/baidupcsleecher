@@ -2,15 +2,18 @@ import logging
 from collections import deque
 from os import makedirs
 from os.path import basename
-from pathlib import Path, PurePosixPath
+from pathlib import Path
+from pathlib import PurePosixPath
 from time import sleep
 
 import requests
+from baidupcs_py.baidupcs import BaiduPCSApi
+from baidupcs_py.baidupcs import BaiduPCSError
+from baidupcs_py.baidupcs import PCS_UA
 from django.conf import settings
 
-from baidupcs_py.baidupcs import PCS_UA, BaiduPCSApi, BaiduPCSError
-
-from .utils import cookies2dict, unify_shared_link
+from .utils import cookies2dict
+from .utils import unify_shared_link
 
 logger = logging.getLogger("baibupcs")
 
@@ -58,7 +61,7 @@ class BaiduPCS:
                     md5=file.md5,
                     # ctime=file.ctime,
                     # mtime=file.mtime,
-                )
+                ),
             )
         return result
 
@@ -133,7 +136,7 @@ class BaiduPCS:
 def remotepath_exists(api, name: str, rd: str, _cache={}) -> bool:
     names = _cache.get(rd)
     if not names:
-        names = set([PurePosixPath(sp.path).name for sp in api.list(rd)])
+        names = {PurePosixPath(sp.path).name for sp in api.list(rd)}
         _cache[rd] = names
     return name in names
 
@@ -151,7 +154,6 @@ def save_shared(
 
     shared_url = unify_shared_link(shared_url)
 
-    # Vertify with password
     if password:
         access_shared(
             api,
@@ -183,7 +185,9 @@ def save_shared(
 
         # Ignore existed file
         if shared_path.is_file and remotepath_exists(
-            api, PurePosixPath(shared_path.path).name, rd
+            api,
+            PurePosixPath(shared_path.path).name,
+            rd,
         ):
             logger.warning(f"WARNING: {shared_path.path} has be in {rd}")
             continue
@@ -198,7 +202,12 @@ def save_shared(
 
         try:
             api.transfer_shared_paths(
-                rd, [shared_path.fs_id], uk, share_id, bdstoken, shared_url
+                rd,
+                [shared_path.fs_id],
+                uk,
+                share_id,
+                bdstoken,
+                shared_url,
             )
             logger.info(f"save: {shared_path.path} to {rd}")
             continue
@@ -206,7 +215,7 @@ def save_shared(
             if err.error_code == 12:  # 12: "文件已经存在"
                 logger.warning(
                     f"WARNING: error_code: {err.error_code}, "
-                    "{shared_path.path} has be in {rd}"
+                    "{shared_path.path} has be in {rd}",
                 )
             elif err.error_code == -32:  # -32: "剩余空间不足，无法转存",
                 raise err
@@ -218,7 +227,7 @@ def save_shared(
                 logger.warning(
                     f"WARNING: error_code: {err.error_code},"
                     " {shared_path.path} "
-                    "has more items and need to transfer one by one"
+                    "has more items and need to transfer one by one",
                 )
             else:
                 raise err
@@ -226,7 +235,11 @@ def save_shared(
         if shared_path.is_dir:
             # Take all sub paths
             sub_paths = list_all_sub_paths(
-                api, shared_path.path, uk, share_id, bdstoken
+                api,
+                shared_path.path,
+                uk,
+                share_id,
+                bdstoken,
             )
             rd = (Path(rd) / basename(shared_path.path)).as_posix()
             for sp in sub_paths:
@@ -246,7 +259,12 @@ def list_all_sub_paths(
     size = 100
     while True:
         sps = api.list_shared_paths(
-            sharedpath, uk, share_id, bdstoken, page=page, size=size
+            sharedpath,
+            uk,
+            share_id,
+            bdstoken,
+            page=page,
+            size=size,
         )
         sub_paths += sps
         if len(sps) < 100:

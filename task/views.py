@@ -5,15 +5,18 @@ from json import loads
 from django.conf import settings
 from django.http import HttpResponse
 from django_filters import rest_framework as filters
-from rest_framework import mixins, status, viewsets
+from rest_framework import mixins
+from rest_framework import status
+from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from .baidupcs import get_baidupcs_client
 from .leecher import transfer
 from .models import Task
-from .serializers import (CaptchaCodeSerializer, FullDownloadNowSerializer,
-                          TaskSerializer)
+from .serializers import CaptchaCodeSerializer
+from .serializers import FullDownloadNowSerializer
+from .serializers import TaskSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +40,11 @@ class TaskViewSet(
         task.full_download_now = settings.FULL_DOWNLOAD_IMMEDIATELY
         task.save()
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED,
+            headers=headers,
+        )
 
     @action(detail=True)
     def files(self, request, pk=None):
@@ -60,8 +67,10 @@ class TaskViewSet(
 
         task = self.get_object()
         if not task.is_waiting_for_captcha_code:
-            return Response({"error": "captcha_code not required"},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "captcha_code not required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         code = request.data["code"]
         task.captcha_code = code
@@ -80,13 +89,13 @@ class TaskViewSet(
         serializer = FullDownloadNowSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         task = self.get_object()
-        task.full_download_now = serializer.validated_data['full_download_now']
+        task.full_download_now = serializer.validated_data["full_download_now"]
         task.save()
         return Response(TaskSerializer(task).data)
 
     def get_serializer(self, *args, **kwargs):
-        if self.action == 'captcha_code':
+        if self.action == "captcha_code":
             return CaptchaCodeSerializer(*args, **kwargs)
-        if self.action == 'full_download_now':
+        if self.action == "full_download_now":
             return FullDownloadNowSerializer(*args, **kwargs)
         return super().get_serializer(*args, **kwargs)

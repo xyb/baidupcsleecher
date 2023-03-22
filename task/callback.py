@@ -20,5 +20,5 @@ def callback(task, action):
         resp.raise_for_status()
         return resp
     except Exception as exc:
-        logger.error(f"Error posting data to callbak URL: {url}")
+        logger.error(f"Error posting data to callback URL: {url}")
         handle_exception(task, exc)
