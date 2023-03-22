@@ -11,7 +11,7 @@ class Task(models.Model):
     class Status(models.TextChoices):
         INITED = "Inited"
         STARTED = "Started"
-        TRANSFERED = "Transfered"
+        TRANSFERRED = "Transferred"
         SAMPLING_DOWNLOADED = "SampleDLed"
         FINISHED = "Finished"
 
@@ -19,7 +19,7 @@ class Task(models.Model):
     shared_link = models.CharField(max_length=100)
     shared_password = models.CharField(max_length=4, blank=True, null=True)
     status = models.CharField(
-        max_length=10,
+        max_length=12,
         editable=False,
         choices=Status.choices,
         default=Status.INITED,
@@ -120,7 +120,7 @@ class Task(models.Model):
 
     @classmethod
     def filter_transferd(cls):
-        return cls.objects.filter(status=cls.Status.TRANSFERED)
+        return cls.objects.filter(status=cls.Status.TRANSFERRED)
 
     @classmethod
     def filter_sampling_downloaded(cls):

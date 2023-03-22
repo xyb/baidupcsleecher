@@ -27,7 +27,9 @@ def save_link(client, task):
         callback(task, "captcha_required")
 
     if (settings.TRANSFER_POLICY == "if_not_present") and client.list_files(
-        task.remote_path, retry=0, fail_silent=True
+        task.remote_path,
+        retry=0,
+        fail_silent=True,
     ):
         logger.info(f"save {task.shared_link} skipped, already exists.")
     else:
@@ -87,7 +89,7 @@ def task_failed(task, message):
 
 
 def finish_transfer(task):
-    task.status = Task.Status.TRANSFERED
+    task.status = Task.Status.TRANSFERRED
     task.save()
 
 
@@ -99,7 +101,7 @@ def transfer(client, task):
         save_link(client, task)
         set_files(client, task)
         finish_transfer(task)
-        logger.info(f"tranfer {task.shared_link} succeed.")
+        logger.info(f"transfer {task.shared_link} succeed.")
     except CaptchaRequired:
         logging.info(f"captcha required: {task.shared_link}")
     except Exception as e:

@@ -1,0 +1,2 @@
+[codespell]
+skip = task/migrations/0003_alter_task_status.py

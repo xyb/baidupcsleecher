@@ -2,7 +2,8 @@ import logging
 import re
 import traceback
 from http.cookies import SimpleCookie
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs
+from urllib.parse import urlparse
 
 SHARED_URL_PREFIX = "https://pan.baidu.com/s/"
 

@@ -63,8 +63,8 @@ PAN_BAIDU_BDUSS = getenv("PAN_BAIDU_BDUSS", "")
 PAN_BAIDU_COOKIES = getenv("PAN_BAIDU_COOKIES", "")
 
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'drf_link_header_pagination.LinkHeaderPagination',
-    'PAGE_SIZE': int(getenv("API_PAGE_SIZE", "20"))
+    "DEFAULT_PAGINATION_CLASS": "drf_link_header_pagination.LinkHeaderPagination",
+    "PAGE_SIZE": int(getenv("API_PAGE_SIZE", "20")),
 }
 
 MIDDLEWARE = [
@@ -98,24 +98,24 @@ TEMPLATES = [
 WSGI_APPLICATION = "baidupcsleecher.wsgi.application"
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple'
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
         },
     },
-    'loggers': {
-        '': {
-            'handlers': ['console'],
-            'level': 'INFO',
+    "loggers": {
+        "": {
+            "handlers": ["console"],
+            "level": "INFO",
         },
     },
-    'formatters': {
-        'simple': {
-            'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-        }
+    "formatters": {
+        "simple": {
+            "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        },
     },
 }
 
