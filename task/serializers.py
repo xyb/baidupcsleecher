@@ -23,6 +23,7 @@ class TaskSerializer(serializers.HyperlinkedModelSerializer):
             "file_listed_at",
             "sample_downloaded_at",
             "full_downloaded_at",
+            "full_download_now",
             "failed",
             "message",
             "captcha_required",
@@ -41,3 +42,7 @@ class TaskSerializer(serializers.HyperlinkedModelSerializer):
 
 class CaptchaCodeSerializer(serializers.Serializer):
     code = serializers.CharField()
+
+
+class FullDownloadNowSerializer(serializers.Serializer):
+    full_download_now = serializers.BooleanField()
