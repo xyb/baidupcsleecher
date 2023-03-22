@@ -52,6 +52,7 @@ class Task(models.Model):
         null=True,
         editable=False,
     )
+    full_download_now = models.BooleanField(default=False, editable=False)
     failed = models.BooleanField(default=False, editable=False)
     message = models.CharField(max_length=1000, editable=False)
     files = models.TextField(editable=False)
@@ -114,8 +115,6 @@ class Task(models.Model):
     @classmethod
     def filter_ready_to_transfer(cls):
         inited = Q(status=cls.Status.INITED)
-        # captcha_required = Q(status=cls.Status.STARTED, captcha_required=True)
-        # tasks = cls.objects.filter(inited | captcha_required)
         tasks = cls.objects.filter(inited)
         return tasks
 
@@ -125,7 +124,10 @@ class Task(models.Model):
 
     @classmethod
     def filter_sampling_downloaded(cls):
-        return cls.objects.filter(status=cls.Status.SAMPLING_DOWNLOADED)
+        return cls.objects.filter(
+            status=cls.Status.SAMPLING_DOWNLOADED,
+            full_download_now=True,
+        )
 
     @property
     def is_waiting_for_captcha_code(self):

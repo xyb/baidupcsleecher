@@ -2,17 +2,17 @@ import logging
 from io import BytesIO
 from json import loads
 
+from django.conf import settings
 from django.http import HttpResponse
 from django_filters import rest_framework as filters
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 
 from .baidupcs import get_baidupcs_client
 from .leecher import transfer
 from .models import Task
-from .serializers import TaskSerializer, CaptchaCodeSerializer
+from .serializers import CaptchaCodeSerializer, TaskSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +28,15 @@ class TaskViewSet(
     serializer_class = TaskSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_fields = ("shared_link", "status")
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        task = serializer.save()
+        task.full_download_now = settings.FULL_DOWNLOAD_IMMEDIATELY
+        task.save()
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     @action(detail=True)
     def files(self, request, pk=None):

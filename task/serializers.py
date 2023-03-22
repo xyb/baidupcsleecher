@@ -23,6 +23,7 @@ class TaskSerializer(serializers.HyperlinkedModelSerializer):
             "file_listed_at",
             "sample_downloaded_at",
             "full_downloaded_at",
+            "full_download_now",
             "failed",
             "message",
             "captcha_required",
@@ -37,7 +38,6 @@ class TaskSerializer(serializers.HyperlinkedModelSerializer):
         if not shared_password and link["password"]:
             data["shared_password"] = link["password"]
         return data
-
 
 class CaptchaCodeSerializer(serializers.Serializer):
     code = serializers.CharField()
