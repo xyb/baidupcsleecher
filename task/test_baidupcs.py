@@ -2,8 +2,13 @@ import unittest
 from unittest.mock import MagicMock
 from unittest.mock import patch
 
+from baidupcs_py.baidupcs import BaiduPCSApi
+from baidupcs_py.baidupcs.errors import BaiduPCSError
+from baidupcs_py.baidupcs.inner import PcsSharedPath
+
 from task.baidupcs import BaiduPCS
 from task.baidupcs import get_baidupcs_client
+from task.baidupcs import save_shared
 
 
 @patch("task.baidupcs.BaiduPCS")
@@ -71,29 +76,64 @@ class TestBaiduPCS(unittest.TestCase):
         self.assertEqual(result[2]["md5"], "789012")
 
 
-class TestSaveSharedLink(unittest.TestCase):
-    def test_save_shared_link(self):
+class TestSaveShared(unittest.TestCase):
+    def setUp(self):
         self.bduss = "test_bduss"
         self.cookies = {"BDUSS": "test_cookie"}
-        with patch("task.baidupcs.BaiduPCSApi") as mock_api:
-            mock_api.return_value.access_shared.return_value = None
-            self.pcs = BaiduPCS(self.bduss, self.cookies)
-            remote_dir = "/test"
-            link = "https://pan.baidu.com/s/1dFf3XJf"
-            password = "123456"
-            callback_save_captcha = MagicMock()
-            captcha_id = "captcha_id"
-            captcha_code = "captcha_code"
+        self.api = MagicMock(spec=BaiduPCSApi)
+        self.api._baidupcs = MagicMock()
+        self.baidupcs = BaiduPCS(
+            self.bduss,
+            self.cookies,
+            api=self.api,
+        )
 
-            self.pcs.save_shared_link(
-                remote_dir,
-                link,
-                password=password,
-                callback_save_captcha=callback_save_captcha,
-                captcha_id=captcha_id,
-                captcha_code=captcha_code,
-            )
+    def test_save_shared(self):
+        shared_url = "https://pan.baidu.com/s/1test"
+        remotedir = "/test_remote_dir"
+        password = "pwd"
+        self.baidupcs.api.shared_paths.return_value = [
+            PcsSharedPath(
+                fs_id=1,
+                path="/sharelink1-2/1",
+                size=0,
+                is_dir=True,
+                is_file=False,
+                md5="",
+                local_ctime=1678787063,
+                local_mtime=1678787063,
+                server_ctime=1678787063,
+                server_mtime=1678787064,
+                uk=123,
+                share_id=4,
+                bdstoken="ffee",
+            ),
+            PcsSharedPath(
+                fs_id=3,
+                path="/leecher/a.wav",
+                size=1024,
+                is_dir=False,
+                is_file=True,
+                md5="beef",
+                local_ctime=1678787063,
+                local_mtime=1678787063,
+                server_ctime=1678787063,
+                server_mtime=1678787064,
+                uk=123,
+                share_id=4,
+                bdstoken="ffee",
+            ),
+        ]
+        self.baidupcs.api.exists.return_value = False
+        self.baidupcs.api.makedir.return_value = None
+        self.baidupcs.api.transfer_shared_paths.side_effect = BaiduPCSError(
+            "Error message",
+            12,
+        )
+        self.baidupcs.api.list_shared_paths.return_value = []
 
+        save_shared(self.baidupcs, shared_url, remotedir, password)
 
-if __name__ == "__main__":
-    unittest.main()
+        self.baidupcs.api.shared_paths.assert_called_with(shared_url)
+        self.baidupcs.api.exists.assert_called_with(remotedir)
+        self.baidupcs.api.transfer_shared_paths.assert_called()
