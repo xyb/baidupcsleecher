@@ -8,3 +8,6 @@ unittest:
 
 coverage:
 	pytest --cov-report html --cov-report xml
+
+tdd:
+	ptw
