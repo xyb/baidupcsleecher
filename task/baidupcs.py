@@ -30,10 +30,10 @@ def get_baidupcs_client():
 
 
 class BaiduPCS:
-    def __init__(self, bduss, cookies):
+    def __init__(self, bduss, cookies, api=None):
         self.bduss = bduss
         self.cookies = cookies
-        self.api = BaiduPCSApi(bduss=bduss, cookies=cookies)
+        self.api = api if api else BaiduPCSApi(bduss=bduss, cookies=cookies)
 
     def list_files(self, remote_dir, retry=3, fail_silent=False):
         while True:
@@ -75,7 +75,7 @@ class BaiduPCS:
         captcha_code: str = "",
     ):
         save_shared(
-            self.api,
+            self,
             link,
             remote_dir,
             password=password,
@@ -142,7 +142,7 @@ def remotepath_exists(api, name: str, rd: str, _cache={}) -> bool:
 
 
 def save_shared(
-    api,
+    pcs,
     shared_url,
     remotedir,
     password=None,
@@ -156,7 +156,7 @@ def save_shared(
 
     if password:
         access_shared(
-            api,
+            pcs,
             shared_url,
             password,
             callback_save_captcha,
@@ -164,7 +164,7 @@ def save_shared(
             captcha_code,
         )
 
-    shared_paths = deque(api.shared_paths(shared_url))
+    shared_paths = deque(pcs.api.shared_paths(shared_url))
 
     # Record the remotedir of each shared_path
     _remotedirs = {}
@@ -179,13 +179,13 @@ def save_shared(
 
         # Make sure remote dir exists
         if rd not in _dir_exists:
-            if not api.exists(rd):
-                api.makedir(rd)
+            if not pcs.api.exists(rd):
+                pcs.api.makedir(rd)
             _dir_exists.add(rd)
 
         # Ignore existed file
         if shared_path.is_file and remotepath_exists(
-            api,
+            pcs.api,
             PurePosixPath(shared_path.path).name,
             rd,
         ):
@@ -201,7 +201,7 @@ def save_shared(
         assert bdstoken
 
         try:
-            api.transfer_shared_paths(
+            pcs.api.transfer_shared_paths(
                 rd,
                 [shared_path.fs_id],
                 uk,
@@ -235,7 +235,7 @@ def save_shared(
         if shared_path.is_dir:
             # Take all sub paths
             sub_paths = list_all_sub_paths(
-                api,
+                pcs.api,
                 shared_path.path,
                 uk,
                 share_id,
@@ -274,7 +274,7 @@ def list_all_sub_paths(
 
 
 def access_shared(
-    api,
+    pcs,
     shared_url: str,
     password: str,
     callback_save_captcha=None,
@@ -282,7 +282,7 @@ def access_shared(
     captcha_code: str = "",
 ):
     try:
-        api._baidupcs.access_shared(shared_url, password, captcha_id, captcha_code)
+        pcs.api._baidupcs.access_shared(shared_url, password, captcha_id, captcha_code)
     except BaiduPCSError as err:
         if err.error_code not in (-9, -62):
             raise err
@@ -291,8 +291,8 @@ def access_shared(
         if err.error_code == -9:
             logger.error("captcha is incorrect!")
 
-        captcha_id, captcha_img_url = api.getcaptcha(shared_url)
+        captcha_id, captcha_img_url = pcs.api.getcaptcha(shared_url)
         logger.debug(f"captcha: {captcha_id}, url {captcha_img_url}")
-        content = api.get_vcode_img(captcha_img_url, shared_url)
+        content = pcs.api.get_vcode_img(captcha_img_url, shared_url)
         callback_save_captcha(captcha_id, captcha_img_url, content)
         raise CaptchaRequired()
