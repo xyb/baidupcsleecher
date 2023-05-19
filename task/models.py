@@ -1,5 +1,8 @@
 from json import dumps
 from os import makedirs
+from os import walk
+from os.path import getsize
+from os.path import join
 from pathlib import Path
 
 from django.conf import settings
@@ -111,6 +114,14 @@ class Task(models.Model):
                 file["path"] = sub_path
             file_list.append(file)
         self.files = dumps(file_list)
+
+    def list_local_files(self):
+        data_path = self.data_path
+        for root, dirs, files in walk(data_path):
+            for file in files:
+                filepath = join(root, file)
+                sub_path = filepath[len(str(data_path)) + 1 :]
+                yield {"file": sub_path, "size": getsize(filepath)}
 
     @classmethod
     def filter_ready_to_transfer(cls):
