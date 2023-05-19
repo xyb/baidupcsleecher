@@ -98,3 +98,37 @@ class TaskViewSetTestCase(APITestCase):
         self.assertEqual(response.json()["id"], 1)
         task = Task.objects.get(pk=self.task.id)
         self.assertEqual(task.full_download_now, True)
+
+    def test_restart(self):
+        self.task.status = self.task.Status.STARTED
+        self.task.failed = True
+        self.task.message = "error"
+        self.task.save()
+        url = reverse("task-restart", args=[self.task.id])
+        data = {}
+
+        response = self.client.post(url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["status"], self.task.Status.INITED.value)
+        task = Task.objects.get(pk=self.task.id)
+        self.assertEqual(task.status, self.task.Status.INITED)
+        self.assertEqual(task.failed, False)
+        self.assertEqual(task.message, "")
+
+    def test_restart_downloading(self):
+        self.task.status = self.task.Status.FINISHED
+        self.task.failed = True
+        self.task.message = "error"
+        self.task.save()
+        url = reverse("task-restart-downloading", args=[self.task.id])
+        data = {}
+
+        response = self.client.post(url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["status"], self.task.Status.TRANSFERRED.value)
+        task = Task.objects.get(pk=self.task.id)
+        self.assertEqual(task.status, self.task.Status.TRANSFERRED)
+        self.assertEqual(task.failed, False)
+        self.assertEqual(task.message, "")
