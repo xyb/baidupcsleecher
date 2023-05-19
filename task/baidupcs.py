@@ -2,6 +2,7 @@ import logging
 from collections import deque
 from os import makedirs
 from os.path import basename
+from os.path import getsize
 from pathlib import Path
 from pathlib import PurePosixPath
 from time import sleep
@@ -91,9 +92,10 @@ class BaiduPCS:
             remote_path = str(Path(remote_dir) / file["path"])
             source_sub_path = remote_path[len(remote_dir) + 1 :]
             local_dir_ = (Path(local_dir) / source_sub_path).parent
-            self.download_file(remote_path, local_dir_, sample_size)
+            file_size = file["size"]
+            self.download_file(remote_path, local_dir_, file_size, sample_size)
 
-    def download_file(self, remote_path, local_dir, sample_size=0):
+    def download_file(self, remote_path, local_dir, file_size, sample_size=0):
         local_path = Path(local_dir) / basename(remote_path)
         logger.info(f"  {remote_path} -> {local_path}")
 
@@ -101,8 +103,11 @@ class BaiduPCS:
             local_path.parent.mkdir(parents=True)
 
         if local_path.exists():
-            logger.info(f"{local_path} is ready existed.")
-            return
+            if (sample_size and sample_size == getsize(local_path)) or (
+                not sample_size and file_size == getsize(local_path)
+            ):
+                logger.info(f"{local_path} is ready existed.")
+                return
 
         url = self.api.download_link(remote_path)
         if not url:
