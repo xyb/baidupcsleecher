@@ -132,3 +132,15 @@ class Task(models.Model):
     @property
     def is_waiting_for_captcha_code(self):
         return self.status == self.Status.STARTED and self.captcha_required
+
+    def restart(self):
+        self.status = self.Status.INITED
+        self.failed = False
+        self.message = ""
+        self.save()
+
+    def restart_downloading(self):
+        self.status = self.Status.TRANSFERRED
+        self.failed = False
+        self.message = ""
+        self.save()

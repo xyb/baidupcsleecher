@@ -93,6 +93,18 @@ class TaskViewSet(
         task.save()
         return Response(TaskSerializer(task).data)
 
+    @action(methods=["post"], detail=True)
+    def restart_downloading(self, request, pk=None):
+        task = self.get_object()
+        task.restart_downloading()
+        return Response({"status": task.status})
+
+    @action(methods=["post"], detail=True)
+    def restart(self, request, pk=None):
+        task = self.get_object()
+        task.restart()
+        return Response({"status": task.status})
+
     def get_serializer(self, *args, **kwargs):
         if self.action == "captcha_code":
             return CaptchaCodeSerializer(*args, **kwargs)
