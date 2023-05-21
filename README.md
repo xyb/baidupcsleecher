@@ -118,7 +118,7 @@ In this case, you should view the `captcha` image via API:
 $ curl localhost:8000/task/${task_id}/captcha/ > captcha.png
 $ open captcha.png
 ```
-Then set `captcha_code` to continous the download process:
+Then set `captcha_code` to continuous the download process:
 ```sh
 $ curl -X POST -d "code=${code}" http://localhost:8031/task/${task_id}/captcha_code/
 ```
