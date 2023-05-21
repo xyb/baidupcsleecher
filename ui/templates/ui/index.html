@@ -73,7 +73,7 @@
     <a href="?page=1"
       class="inline-flex h-8 w-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180">
       <span class="sr-only">First Page</span>
-      <svg class="h-4 w-4 text-gray-500" width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
+      <svg class="h-6 w-6 text-gray-500" width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
         stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
         <path stroke="none" d="M0 0h24v24H0z" />
         <polyline points="11 7 6 12 11 17" />
@@ -83,7 +83,7 @@
     <a href="?page={{ page.previous_page_number }}"
       class="inline-flex h-8 w-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180">
       <span class="sr-only">Next Page</span>
-      <svg class="h-4 w-4 text-gray-500" width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
+      <svg class="h-6 w-6 text-gray-500" width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
         stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
         <path stroke="none" d="M0 0h24v24H0z" />
         <polyline points="15 6 9 12 15 18" />
@@ -91,17 +91,17 @@
     </a>
     {% endif %}
 
-    <p class="text-xs text-gray-900">
+    <p class="text-xl text-gray-900">
       {{ page.number }}
       <span class="mx-0.25">/</span>
-      {{ page.paginator.num_pages }}
+      {{ page.paginator.num_pages }} Pages
     </p>
 
     {% if page.has_next %}
     <a href="?page={{ page.next_page_number }}"
       class="inline-flex h-8 w-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180">
       <span class="sr-only">Next Page</span>
-      <svg class="h-4 w-4 text-gray-500" width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
+      <svg class="h-6 w-6 text-gray-500" width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
         stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
         <path stroke="none" d="M0 0h24v24H0z" />
         <polyline points="9 6 15 12 9 18" />
@@ -110,7 +110,7 @@
     <a href="?page={{ page.paginator.num_pages }}"
       class="inline-flex h-8 w-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180">
       <span class="sr-only">Last Page</span>
-      <svg class="h-4 w-4 text-gray-500" width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
+      <svg class="h-6 w-6 text-gray-500" width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
         stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
         <path stroke="none" d="M0 0h24v24H0z" />
         <polyline points="7 7 12 12 7 17" />
