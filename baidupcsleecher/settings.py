@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "django_filters",
     "rest_framework",
     "task",
+    "ui",
 ]
 
 # baidupcsleecher settings
@@ -83,7 +84,7 @@ ROOT_URLCONF = "baidupcsleecher.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / 'templates'],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [

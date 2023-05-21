@@ -25,5 +25,6 @@ router.register(r"task", views.TaskViewSet)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("ui/", include("ui.urls")),
     path("", include(router.urls)),
 ]
