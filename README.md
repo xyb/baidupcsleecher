@@ -56,9 +56,13 @@ The creation API will return the task object:
 
 When the leech task is created, the background processes will start:
 - save the shared files to your own cloud drive
+    - then the value of `transfer_completed_at` is no longer null
 - fetch the list of files
+    - `file_listed_at` will be set
 - pre-download samples (first 10KB) of all files
-- download full files, if you set the environment `FULL_DOWNLOAD_IMMEDIATELY=1` (default: 0, disabled), or set `full_download_now`.
+    - `sample_downloaded_at` will be set
+- download full files, if you set the environment `FULL_DOWNLOAD_IMMEDIATELY=1` (default: 0, disabled), or set `full_download_now`
+    - `full_downloaded_at` and `finished_at` will be set
 
 ### Callback
 
@@ -78,6 +82,67 @@ So, you need to allow the leecher to start downloading full files manually by:
 ```sh
 $ curl -X POST -d "full_download_now=true" localhost:8000/task/${task_id}/full_download_now/
 ```
+
+### List remote files
+
+When the `file_listed_at` of task be set, you could retrieve the list of remote files by:
+```sh
+$ curl localhost:8000/task/${task_id}/files/
+```
+
+The response will be like:
+```json
+[
+  {
+    "path": "dir1",
+    "is_dir": true,
+    "is_file": false,
+    "size": 0,
+    "md5": null
+  },
+  {
+    "path": "dir1/my.doc",
+    "is_dir": false,
+    "is_file": true,
+    "size": 9518361,
+    "md5": "ad5bea8001e9db88f8cd8145aaf8ccef"
+  }
+]
+```
+
+### Captcha
+
+Sometimes the Baidu Cloud Disk requires a CAPTCHA to process the request, then the task will show as `captcha_required=True`.
+In this case, you should view the `captcha` image via API:
+```sh
+$ curl localhost:8000/task/${task_id}/captcha/ > captcha.png
+$ open captcha.png
+```
+Then set `captcha_code` to continuous the download process:
+```sh
+$ curl -X POST -d "code=${code}" http://localhost:8031/task/${task_id}/captcha_code/
+```
+
+### Error and restart
+
+When the download process completes successfully, `finished_at` will be set and `failed` will be `False`.
+However, if there are any other unexpected errors, `failed` will be `True` and the error will be logged in `message`.
+
+When you think the error has been fixed or you want to retry the download process, you should call the restart API:
+```sh
+$ curl -X POST localhost:8000/task/${task_id}/restart/
+```
+It will return:
+```json
+{"status": "Inited"}
+```
+Which means that the entire download process will start all over.
+
+Or you can call:
+```sh
+$ curl -X POST localhost:8000/task/${task_id}/restart_downloading/
+```
+This simply restarts the download process for samples and full files, but skips the steps of saving and retrieving the file list.
 
 ## Configuration
 
