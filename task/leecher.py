@@ -60,7 +60,7 @@ def download_samples(client, task):
     client.leech(
         remote_dir=task.remote_path,
         local_dir=settings.DATA_DIR / task.sample_path,
-        sample_size=10240,
+        sample_size=settings.SAMPLE_SIZE,
     )
     task.sample_downloaded_at = timezone.now()
     task.save()

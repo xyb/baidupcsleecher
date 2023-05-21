@@ -59,7 +59,7 @@ When the leech task is created, the background processes will start:
     - then the value of `transfer_completed_at` is no longer null
 - fetch the list of files
     - `file_listed_at` will be set
-- pre-download samples (first 10KB) of all files
+- pre-download first 10KB or `SAMPLE_SIZE` bytes of all files as samples
     - `sample_downloaded_at` will be set
 - download full files, if you set the environment `FULL_DOWNLOAD_IMMEDIATELY=1` (default: 0, disabled), or set `full_download_now`
     - `full_downloaded_at` and `finished_at` will be set
@@ -171,6 +171,8 @@ DATA_DIR = "/tmp"
 REMOTE_LEECHER_DIR = "/leecher"
 # trigger leech every few seconds
 RUNNER_SLEEP_SECONDS = 5
+# download the first block of file as sample
+SAMPLE_SIZE = 10240
 # whether to download full files, disabled by default
 FULL_DOWNLOAD_IMMEDIATELY = 0
 # shared link transfer policy: always, if_not_present (default)
