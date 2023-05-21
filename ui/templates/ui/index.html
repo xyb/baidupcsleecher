@@ -3,83 +3,121 @@
 {% block nav %}
 <a href="/ui/">UI</a>
 {% endblock %}
+
 {% block content %}
 <div class="grid grid-cols-2 gap-2">
 
   {% for task in page %}
-<div class="bg-white p-6 rounded-lg shadow-lg">
-  <div class="flex items-baseline">
-    <span
-      class="bg-teal-200 text-teal-800 text-xs px-2 inline-block rounded-full  uppercase font-semibold tracking-wide">
-      {{ task.status }}
-    </span>
-    {% if task.failed %}
+  <div class="bg-white p-6 rounded-lg shadow-lg">
+    <div class="flex items-baseline">
+      <span
+        class="bg-teal-200 text-teal-800 text-xs px-2 inline-block rounded-full  uppercase font-semibold tracking-wide">
+        {{ task.status }}
+      </span>
+      {% if task.failed %}
       <span
         class="bg-red-400 text-teal-800 text-xs px-2 inline-block rounded-full  uppercase font-semibold tracking-wide">
         Failed
       </span>
-    {% endif %}
-    <div class="ml-2 text-gray-600 uppercase text-xs font-semibold tracking-wider">
-      {{ task.created_at }}
+      {% endif %}
+      <div class="ml-2 text-gray-600 uppercase text-xs font-semibold tracking-wider">
+        {{ task.created_at }}
+      </div>
     </div>
-  </div>
-  <h4 class="mt-1 text-xl font-semibold uppercase leading-tight truncate">
-    <span>{{ task.id }}.</span>
-    <span>{{ task.shared_id }}</span>
-    <span class="text-gray-600 text-sm"> {{ task.shared_password }}</span>
-  </h4>
-  <div class="mt-4">
-    <span class="text-teal-600 text-md font-semibold">{{ task.local_files|length }} / {{ task.remote_files|length }} files downloaded.</span>
-    {% if task.transfer_completed_at %}
-    <svg class="h-6 w-6 text-green-500 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-      stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="5.5" cy="11.5" r="4.5" />
-      <circle cx="18.5" cy="11.5" r="4.5" />
-      <line x1="5.5" y1="16" x2="18.5" y2="16" />
-    </svg>
-    {% endif %}
-    {% if task.sample_downloaded_at %}
-    <svg class="h-6 w-6 text-green-500 inline" width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
-      stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-      <path stroke="none" d="M0 0h24v24H0z" />
-      <path d="M9 5H7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2V7a2 2 0 0 0 -2 -2h-2" />
-      <rect x="9" y="3" width="6" height="4" rx="2" />
-      <line x1="9" y1="12" x2="9.01" y2="12" />
-      <line x1="13" y1="12" x2="15" y2="12" />
-      <line x1="9" y1="16" x2="9.01" y2="16" />
-      <line x1="13" y1="16" x2="15" y2="16" />
-    </svg>
-    {% endif %}
-    {% if task.full_downloaded_at %}
-    <svg class="h-6 w-6 text-green-500 inline" width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
-      stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-      <path stroke="none" d="M0 0h24v24H0z" />
-      <rect x="3" y="4" width="18" height="4" rx="2" />
-      <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
-      <line x1="10" y1="12" x2="14" y2="12" />
-    </svg>
-    {% endif %}
-  </div>
+    <h4 class="mt-1 text-xl font-semibold uppercase leading-tight truncate">
+      <span>{{ task.id }}.</span>
+      <span>{{ task.shared_id }}</span>
+      <span class="text-gray-600 text-sm"> {{ task.shared_password }}</span>
+    </h4>
+    <div class="mt-4">
+      <span class="text-teal-600 text-md font-semibold">{{ task.local_files|length }} / {{ task.remote_files|length }}
+        files downloaded.</span>
+      {% if task.transfer_completed_at %}
+      <svg class="h-6 w-6 text-green-500 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="5.5" cy="11.5" r="4.5" />
+        <circle cx="18.5" cy="11.5" r="4.5" />
+        <line x1="5.5" y1="16" x2="18.5" y2="16" />
+      </svg>
+      {% endif %}
+      {% if task.sample_downloaded_at %}
+      <svg class="h-6 w-6 text-green-500 inline" width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
+        stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path stroke="none" d="M0 0h24v24H0z" />
+        <path d="M9 5H7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2V7a2 2 0 0 0 -2 -2h-2" />
+        <rect x="9" y="3" width="6" height="4" rx="2" />
+        <line x1="9" y1="12" x2="9.01" y2="12" />
+        <line x1="13" y1="12" x2="15" y2="12" />
+        <line x1="9" y1="16" x2="9.01" y2="16" />
+        <line x1="13" y1="16" x2="15" y2="16" />
+      </svg>
+      {% endif %}
+      {% if task.full_downloaded_at %}
+      <svg class="h-6 w-6 text-green-500 inline" width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
+        stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path stroke="none" d="M0 0h24v24H0z" />
+        <rect x="3" y="4" width="18" height="4" rx="2" />
+        <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+        <line x1="10" y1="12" x2="14" y2="12" />
+      </svg>
+      {% endif %}
+    </div>
 
-</div>
+  </div>
   {% endfor %}
 </div>
 
-<div class="pagination">
-  <span class="step-links">
+<div class="pagination py-6 px-4 text-center sm:p-6 md:py-10 md:px-8">
+  <div class="inline-flex items-center justify-center gap-3">
     {% if page.has_previous %}
-    <a href="?page=1">&laquo; first</a>
-    <a href="?page={{ page.previous_page_number }}">previous</a>
+    <a href="?page=1"
+      class="inline-flex h-8 w-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180">
+      <span class="sr-only">First Page</span>
+      <svg class="h-4 w-4 text-gray-500" width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
+        stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path stroke="none" d="M0 0h24v24H0z" />
+        <polyline points="11 7 6 12 11 17" />
+        <polyline points="17 7 12 12 17 17" />
+      </svg>
+    </a>
+    <a href="?page={{ page.previous_page_number }}"
+      class="inline-flex h-8 w-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180">
+      <span class="sr-only">Next Page</span>
+      <svg class="h-4 w-4 text-gray-500" width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
+        stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path stroke="none" d="M0 0h24v24H0z" />
+        <polyline points="15 6 9 12 15 18" />
+      </svg>
+    </a>
     {% endif %}
 
-    <span class="current">
-      Page {{ page.number }} of {{ page.paginator.num_pages }}.
-    </span>
+    <p class="text-xs text-gray-900">
+      {{ page.number }}
+      <span class="mx-0.25">/</span>
+      {{ page.paginator.num_pages }}
+    </p>
 
     {% if page.has_next %}
-    <a href="?page={{ page.next_page_number }}">next</a>
-    <a href="?page={{ page.paginator.num_pages }}">last &raquo;</a>
+    <a href="?page={{ page.next_page_number }}"
+      class="inline-flex h-8 w-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180">
+      <span class="sr-only">Next Page</span>
+      <svg class="h-4 w-4 text-gray-500" width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
+        stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path stroke="none" d="M0 0h24v24H0z" />
+        <polyline points="9 6 15 12 9 18" />
+      </svg>
+    </a>
+    <a href="?page={{ page.paginator.num_pages }}"
+      class="inline-flex h-8 w-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180">
+      <span class="sr-only">Last Page</span>
+      <svg class="h-4 w-4 text-gray-500" width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
+        stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path stroke="none" d="M0 0h24v24H0z" />
+        <polyline points="7 7 12 12 7 17" />
+        <polyline points="13 7 18 12 13 17" />
+      </svg>
+    </a>
     {% endif %}
-  </span>
+  </div>
 </div>
 {% endblock %}
