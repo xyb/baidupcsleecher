@@ -54,7 +54,7 @@ The creation API will return the task object:
 }
 ```
 
-When the leech task is created, the backgroud processes will start:
+When the leech task is created, the background processes will start:
 - save the shared files to your own cloud drive
 - fetch the list of files
 - pre-download samples (first 10KB) of all files
@@ -74,7 +74,7 @@ The body of callback request is the task object in json format.
 By default, automatic downloading of full files is disabled by `FULL_DOWNLOAD_IMMEDIATELY=0`
 to avoid accidentally filling up the disk.
 
-So, you need to allow the leecher to start downloading full files manully by:
+So, you need to allow the leecher to start downloading full files manually by:
 ```sh
 $ curl -X POST -d "full_download_now=true" localhost:8000/task/${task_id}/full_download_now/
 ```
@@ -98,9 +98,9 @@ PAN_BAIDU_BDUSS = ""
 PAN_BAIDU_COOKIES = ""
 
 ## django settings
-# 0: production, 1: devlopment
+# 0: production, 1: development
 DJANGO_DEBUG = 1
-# specify hosts seperated by commas
+# specify hosts separated by commas
 DJANGO_ALLOWED_HOSTS = '*'
 # specify hosts separeated by commas
 CORS_ALLOWED_ORIGINS = ''
