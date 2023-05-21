@@ -56,6 +56,7 @@ INSTALLED_APPS = [
 DATA_DIR = Path(getenv("DATA_DIR", "/tmp")).resolve()
 REMOTE_LEECHER_DIR = str(Path(getenv("REMOTE_LEECHER_DIR", "/leecher")).resolve())
 RUNNER_SLEEP_SECONDS = int(getenv("RUNNER_SLEEP_SECONDS", "5"))
+SAMPLE_SIZE = int(getenv("SAMPLE_SIZE", "10240"))
 FULL_DOWNLOAD_IMMEDIATELY = bool(int(getenv("FULL_DOWNLOAD_IMMEDIATELY", 0)))
 # shared link transfer policy: always, if_not_present
 TRANSFER_POLICY = getenv("TRANSFER_POLICY", "if_not_present")
