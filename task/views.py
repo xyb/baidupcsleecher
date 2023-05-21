@@ -56,6 +56,11 @@ class TaskViewSet(
         return Response(files)
 
     @action(detail=True)
+    def local_files(self, request, pk=None):
+        task = self.get_object()
+        return Response(task.list_local_files())
+
+    @action(detail=True)
     def captcha(self, request, pk=None):
         task = self.get_object()
         return HttpResponse(BytesIO(task.captcha), content_type="image/jpeg")

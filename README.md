@@ -110,6 +110,23 @@ The response will be like:
 ]
 ```
 
+### List local files
+
+You can call the `local_files` to list files that were downloaded:
+```sh
+curl localhost:8000/task/${task_id}/local_files/
+```
+
+It will return the name and size of files:
+```json
+[
+  {
+    "file": "dir1/my.doc",
+    "size": 9518361
+  }
+]
+```
+
 ### Captcha
 
 Sometimes the Baidu Cloud Disk requires a CAPTCHA to process the request, then the task will show as `captcha_required=True`.
