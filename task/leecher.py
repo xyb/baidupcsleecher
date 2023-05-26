@@ -84,7 +84,7 @@ def task_failed(task, message):
     task.status = Task.Status.FINISHED
     task.finished_at = timezone.now()
     task.failed = True
-    task.message = message
+    task.message = message[: Task._meta.get_field("message").max_length]
     task.save()
 
 
