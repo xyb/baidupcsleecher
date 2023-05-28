@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}Baidu Cloud Storage Leecher{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="transition-colors duration-500">
+  <div class="container mx-auto">
+    <main role="main" class="w-full pt-1 px-2">
+        <!-- content area -->
+        {% block content %}{% endblock %}
+    </main>
+    </div>
+</div>
+<footer class="mt-auto">
+    {% block footer %}{% endblock %}
+</footer>
+</body>
+</html>
