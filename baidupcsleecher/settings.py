@@ -52,6 +52,8 @@ INSTALLED_APPS = [
     "task",
     "ui",
 ]
+if DEBUG:
+    INSTALLED_APPS.append("django_browser_reload")
 
 # baidupcsleecher settings
 DATA_DIR = Path(getenv("DATA_DIR", "/tmp")).resolve()
@@ -79,6 +81,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+if DEBUG:
+    MIDDLEWARE.append("django_browser_reload.middleware.BrowserReloadMiddleware")
 
 ROOT_URLCONF = "baidupcsleecher.urls"
 
