@@ -155,3 +155,54 @@ class Task(models.Model):
         self.failed = False
         self.message = ""
         self.save()
+
+    def get_steps(self):
+        found_current = False
+        status = self.Status
+        if not self.failed:
+            for name, (start_status, end_status) in [
+                ("waiting_assign", [status.INITED, status.STARTED]),
+                ("transferring", [status.STARTED, status.TRANSFERRED]),
+                (
+                    "downloading_samplings",
+                    [status.TRANSFERRED, status.SAMPLING_DOWNLOADED],
+                ),
+                ("downloading_files", [status.SAMPLING_DOWNLOADED, status.FINISHED]),
+            ]:
+                if self.status == start_status:
+                    found_current = True
+                    yield name, "doing"
+                elif found_current:
+                    yield name, "todo"
+                else:
+                    yield name, "done"
+        else:
+            for name, (time_prev, time_completed) in [
+                ("waiting_assign", [self.created_at, self.started_at]),
+                ("transferring", [self.started_at, self.transfer_completed_at]),
+                (
+                    "downloading_samplings",
+                    [
+                        self.transfer_completed_at,
+                        self.sample_downloaded_at,
+                    ],
+                ),
+                (
+                    "downloading_files",
+                    [
+                        self.sample_downloaded_at,
+                        self.full_downloaded_at,
+                    ],
+                ),
+            ]:
+                if time_completed:
+                    yield name, "done"
+                elif time_prev:
+                    yield name, "failed"
+                else:
+                    yield name, "todo"
+
+    def get_current_step(self):
+        for name, done in self.get_steps():
+            if done in ["doing", "failed"]:
+                return name
