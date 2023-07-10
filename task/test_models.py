@@ -102,7 +102,7 @@ class TaskTestCase(TestCase):
         assert self.task.get_current_step() == "downloading_samplings"
 
     def test_steps4_failed(self):
-        self.task.status = self.task.Status.TRANSFERRED
+        self.task.status = self.task.Status.SAMPLING_DOWNLOADED
         self.task.started_at = self.task.created_at
         self.task.transfer_completed_at = self.task.created_at
         self.task.sample_downloaded_at = self.task.created_at
@@ -147,7 +147,6 @@ class TaskTestCase(TestCase):
         task.status = task.Status.TRANSFERRED
         task.started_at = task.created_at
         task.transfer_completed_at = task.created_at
-        task.sample_downloaded_at = task.created_at
         task.failed = True
         task.save()
 
