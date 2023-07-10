@@ -222,6 +222,8 @@ class Task(models.Model):
         return resume_methods[step_name]
 
     def resume(self):
+        if not self.failed:
+            return
         method = getattr(self, self.get_resume_method_name())
         method()
 
