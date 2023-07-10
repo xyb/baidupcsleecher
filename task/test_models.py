@@ -17,6 +17,7 @@ class TaskTestCase(TestCase):
             ("downloading_files", "todo"),
         ]
         assert self.task.get_current_step() == "waiting_assign"
+        assert not self.task.done
 
     def test_steps2(self):
         self.task.status = self.task.Status.STARTED
@@ -28,6 +29,7 @@ class TaskTestCase(TestCase):
             ("downloading_files", "todo"),
         ]
         assert self.task.get_current_step() == "transferring"
+        assert not self.task.done
 
     def test_steps3(self):
         self.task.status = self.task.Status.TRANSFERRED
@@ -39,6 +41,7 @@ class TaskTestCase(TestCase):
             ("downloading_files", "todo"),
         ]
         assert self.task.get_current_step() == "downloading_samplings"
+        assert not self.task.done
 
     def test_steps4(self):
         self.task.status = self.task.Status.SAMPLING_DOWNLOADED
@@ -50,9 +53,11 @@ class TaskTestCase(TestCase):
             ("downloading_files", "doing"),
         ]
         assert self.task.get_current_step() == "downloading_files"
+        assert not self.task.done
 
     def test_steps5(self):
         self.task.status = self.task.Status.FINISHED
+        self.task.full_downloaded_at = self.task.created_at
 
         assert list(self.task.get_steps()) == [
             ("waiting_assign", "done"),
@@ -61,6 +66,16 @@ class TaskTestCase(TestCase):
             ("downloading_files", "done"),
         ]
         assert self.task.get_current_step() is None
+        assert self.task.done
+
+    def test_done(self):
+        self.task.full_downloaded_at = self.task.created_at
+
+        assert not self.task.done
+
+        self.task.status = self.task.Status.FINISHED
+
+        assert self.task.done
 
     def test_steps1_failed(self):
         self.task.status = self.task.Status.INITED
@@ -73,6 +88,7 @@ class TaskTestCase(TestCase):
             ("downloading_files", "todo"),
         ]
         assert self.task.get_current_step() == "waiting_assign"
+        assert not self.task.done
 
     def test_steps2_failed(self):
         self.task.status = self.task.Status.STARTED
@@ -86,6 +102,7 @@ class TaskTestCase(TestCase):
             ("downloading_files", "todo"),
         ]
         assert self.task.get_current_step() == "transferring"
+        assert not self.task.done
 
     def test_steps3_failed(self):
         self.task.status = self.task.Status.TRANSFERRED
@@ -100,6 +117,7 @@ class TaskTestCase(TestCase):
             ("downloading_files", "todo"),
         ]
         assert self.task.get_current_step() == "downloading_samplings"
+        assert not self.task.done
 
     def test_steps4_failed(self):
         self.task.status = self.task.Status.SAMPLING_DOWNLOADED
@@ -115,6 +133,7 @@ class TaskTestCase(TestCase):
             ("downloading_files", "failed"),
         ]
         assert self.task.get_current_step() == "downloading_files"
+        assert not self.task.done
 
     def test_filter_failed_but_nothing(self):
         assert list(Task.filter_failed()) == []
@@ -159,3 +178,16 @@ class TaskTestCase(TestCase):
             ("downloading_samplings", "doing"),
             ("downloading_files", "todo"),
         ]
+
+    def test_recoverable(self):
+        assert not self.task.recoverable
+
+        self.task.failed = True
+        self.task.message = "BaiduPCS._request"
+        assert self.task.recoverable
+
+        self.task.message = "error_code: 105,"
+        assert not self.task.recoverable
+
+        self.task.message = "unknown error"
+        assert not self.task.recoverable

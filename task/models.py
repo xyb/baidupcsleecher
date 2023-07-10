@@ -231,3 +231,33 @@ class Task(models.Model):
     def schedule_resume_failed(cls):
         for task in cls.filter_failed():
             task.resume()
+
+    @property
+    def done(self):
+        if self.failed:
+            return False
+        if not self.full_downloaded_at:
+            return False
+        if self.status != self.Status.FINISHED:
+            return False
+        return True
+
+    @property
+    def recoverable(self):
+        if not self.failed:
+            return False
+
+        e = self.message
+        if (
+            e == "Remote end closed connection without response"
+            or e == "<urlopen error [Errno 104] Connection reset by peer>"
+            or e == "BaiduPCS._request"
+            or "error_code: -65," in e
+            or "操作过于频繁，请您稍后重试" in e
+        ):
+            return True
+
+        if "error_code: 105," in e or "啊哦，链接错误没找到文件，请打开正确的分享链接" in e:
+            return False
+
+        return False
