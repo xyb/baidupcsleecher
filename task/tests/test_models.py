@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from .models import Task
+from ..models import Task
 
 
 class TaskTestCase(TestCase):
