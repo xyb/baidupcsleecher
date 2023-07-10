@@ -58,6 +58,7 @@ class Task(models.Model):
     full_download_now = models.BooleanField(default=False, editable=False)
     failed = models.BooleanField(default=False, editable=False)
     message = models.CharField(max_length=1000, editable=False)
+    retry_times = models.IntegerField(default=0, editable=False)
     files = models.TextField(editable=False)
     captcha = models.BinaryField(editable=False, default=b"")
     captcha_required = models.BooleanField(default=False, editable=False)
@@ -152,12 +153,14 @@ class Task(models.Model):
         self.status = self.Status.INITED
         self.failed = False
         self.message = ""
+        self.inc_retry_times()
         self.save()
 
     def restart_downloading(self):
         self.status = self.Status.TRANSFERRED
         self.failed = False
         self.message = ""
+        self.inc_retry_times()
         self.save()
 
     def get_steps(self):
@@ -220,6 +223,10 @@ class Task(models.Model):
         }
         step_name = self.get_current_step()
         return resume_methods[step_name]
+
+    def inc_retry_times(self):
+        self.retry_times += 1
+        self.save()
 
     def resume(self):
         if not self.failed:

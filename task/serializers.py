@@ -27,6 +27,7 @@ class TaskSerializer(serializers.HyperlinkedModelSerializer):
             "done",
             "failed",
             "recoverable",
+            "retry_times",
             "message",
             "captcha_required",
             "captcha_url",
