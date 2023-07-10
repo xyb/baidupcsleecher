@@ -132,3 +132,24 @@ class TaskViewSetTestCase(APITestCase):
         self.assertEqual(task.status, self.task.Status.TRANSFERRED)
         self.assertEqual(task.failed, False)
         self.assertEqual(task.message, "")
+
+    def test_resume(self):
+        task = self.task
+        task.status = task.Status.SAMPLING_DOWNLOADED
+        task.started_at = task.created_at
+        task.transfer_completed_at = task.created_at
+        task.sample_downloaded_at = task.created_at
+        task.failed = True
+        task.message = "error"
+        task.save()
+        url = reverse("task-resume", args=[task.id])
+        data = {}
+
+        response = self.client.post(url, data, format="json")
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.json()["status"] == Task.Status.TRANSFERRED.value
+        task = Task.objects.get(pk=task.id)
+        assert task.status == Task.Status.TRANSFERRED
+        assert task.failed is False
+        assert task.message == ""
