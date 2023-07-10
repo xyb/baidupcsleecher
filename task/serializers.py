@@ -46,3 +46,7 @@ class CaptchaCodeSerializer(serializers.Serializer):
 
 class FullDownloadNowSerializer(serializers.Serializer):
     full_download_now = serializers.BooleanField()
+
+
+class OperationSerializer(serializers.Serializer):
+    pass

@@ -16,6 +16,7 @@ from .leecher import transfer
 from .models import Task
 from .serializers import CaptchaCodeSerializer
 from .serializers import FullDownloadNowSerializer
+from .serializers import OperationSerializer
 from .serializers import TaskSerializer
 
 logger = logging.getLogger(__name__)
@@ -110,9 +111,17 @@ class TaskViewSet(
         task.restart()
         return Response({"status": task.status})
 
+    @action(methods=["post"], detail=True)
+    def resume(self, request, pk=None):
+        task = self.get_object()
+        task.resume()
+        return Response({"status": task.status})
+
     def get_serializer(self, *args, **kwargs):
         if self.action == "captcha_code":
             return CaptchaCodeSerializer(*args, **kwargs)
         if self.action == "full_download_now":
             return FullDownloadNowSerializer(*args, **kwargs)
+        if self.action in ["restart", "restart_downloading", "resume"]:
+            return OperationSerializer(*args, **kwargs)
         return super().get_serializer(*args, **kwargs)

@@ -140,6 +140,10 @@ class Task(models.Model):
             full_download_now=True,
         )
 
+    @classmethod
+    def filter_failed(cls):
+        return cls.objects.filter(failed=True)
+
     @property
     def is_waiting_for_captcha_code(self):
         return self.status == self.Status.STARTED and self.captcha_required
@@ -206,3 +210,24 @@ class Task(models.Model):
         for name, done in self.get_steps():
             if done in ["doing", "failed"]:
                 return name
+
+    def get_resume_method_name(self):
+        resume_methods = {
+            "waiting_assign": "restart",
+            "transferring": "restart",
+            "downloading_samplings": "restart_downloading",
+            "downloading_files": "restart_downloading",
+        }
+        step_name = self.get_current_step()
+        return resume_methods[step_name]
+
+    def resume(self):
+        if not self.failed:
+            return
+        method = getattr(self, self.get_resume_method_name())
+        method()
+
+    @classmethod
+    def schedule_resume_failed(cls):
+        for task in cls.filter_failed():
+            task.resume()
