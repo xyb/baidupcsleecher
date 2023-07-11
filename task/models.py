@@ -222,7 +222,8 @@ class Task(models.Model):
             "downloading_files": "restart_downloading",
         }
         step_name = self.get_current_step()
-        return resume_methods[step_name]
+        if step_name:
+            return resume_methods[step_name]
 
     def inc_retry_times(self):
         self.retry_times += 1
@@ -231,8 +232,10 @@ class Task(models.Model):
     def resume(self):
         if not self.failed:
             return
-        method = getattr(self, self.get_resume_method_name())
-        method()
+        method_name = self.get_resume_method_name()
+        if method_name:
+            method = getattr(self, method_name)
+            method()
 
     @classmethod
     def schedule_resume_failed(cls):
@@ -267,4 +270,5 @@ class Task(models.Model):
         if "error_code: 105," in e or "啊哦，链接错误没找到文件，请打开正确的分享链接" in e:
             return False
 
+        # assume task is not recoverable by default to avoid flood requests
         return False

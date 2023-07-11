@@ -89,6 +89,7 @@ class TaskTestCase(TestCase):
         ]
         assert self.task.get_current_step() == "waiting_assign"
         assert not self.task.done
+        assert self.task.get_resume_method_name() == "restart"
 
     def test_steps2_failed(self):
         self.task.status = self.task.Status.STARTED
@@ -103,6 +104,7 @@ class TaskTestCase(TestCase):
         ]
         assert self.task.get_current_step() == "transferring"
         assert not self.task.done
+        assert self.task.get_resume_method_name() == "restart"
 
     def test_steps3_failed(self):
         self.task.status = self.task.Status.TRANSFERRED
@@ -118,6 +120,7 @@ class TaskTestCase(TestCase):
         ]
         assert self.task.get_current_step() == "downloading_samplings"
         assert not self.task.done
+        assert self.task.get_resume_method_name() == "restart_downloading"
 
     def test_steps4_failed(self):
         self.task.status = self.task.Status.SAMPLING_DOWNLOADED
@@ -134,6 +137,25 @@ class TaskTestCase(TestCase):
         ]
         assert self.task.get_current_step() == "downloading_files"
         assert not self.task.done
+        assert self.task.get_resume_method_name() == "restart_downloading"
+
+    def test_steps5_failed_but_yes_it_should_not_happend(self):
+        self.task.status = self.task.Status.SAMPLING_DOWNLOADED
+        self.task.started_at = self.task.created_at
+        self.task.transfer_completed_at = self.task.created_at
+        self.task.sample_downloaded_at = self.task.created_at
+        self.task.full_downloaded_at = self.task.created_at
+        self.task.failed = True
+
+        assert list(self.task.get_steps()) == [
+            ("waiting_assign", "done"),
+            ("transferring", "done"),
+            ("downloading_samplings", "done"),
+            ("downloading_files", "done"),
+        ]
+        assert self.task.get_current_step() is None
+        assert not self.task.done
+        assert self.task.get_resume_method_name() is None
 
     def test_filter_failed_but_nothing(self):
         assert list(Task.filter_failed()) == []

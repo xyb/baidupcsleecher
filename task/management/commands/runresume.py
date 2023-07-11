@@ -16,7 +16,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--once",
             action="store_true",
-            help="run .",
+            help="resume all failed tasks once and exit immediately.",
         )
 
     def handle(self, *args, **options):
@@ -30,5 +30,6 @@ class Command(BaseCommand):
                 task.resume()
 
             if options["once"]:
+                logger.info("auto resume tasks once and exit now.")
                 return
             sleep(settings.RUNNER_SLEEP_SECONDS)
