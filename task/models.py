@@ -229,7 +229,7 @@ class Task(models.Model):
         self.retry_times += 1
         self.save()
 
-    def resume(self):
+    def schedule_resume(self):
         if not self.failed:
             return
         method_name = self.get_resume_method_name()
@@ -240,7 +240,7 @@ class Task(models.Model):
     @classmethod
     def schedule_resume_failed(cls):
         for task in cls.filter_failed():
-            task.resume()
+            task.schedule_resume()
 
     @property
     def done(self):

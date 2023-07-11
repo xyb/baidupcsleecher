@@ -114,7 +114,7 @@ class TaskViewSet(
     @action(methods=["post"], detail=True)
     def resume(self, request, pk=None):
         task = self.get_object()
-        task.resume()
+        task.schedule_resume()
         return Response({"status": task.status})
 
     def get_serializer(self, *args, **kwargs):
