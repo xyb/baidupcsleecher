@@ -25,6 +25,7 @@ class Command(BaseCommand):
                 continue
             if task.retry_times >= settings.RETRY_TIMES_LIMIT:
                 continue
+            logger.info(f"schedule resume task: {task}, {task.get_current_step()}")
             task.schedule_resume()
 
     def handle(self, *args, **options):
