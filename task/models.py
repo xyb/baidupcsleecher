@@ -56,7 +56,7 @@ class Task(models.Model):
         null=True,
         editable=False,
     )
-    full_download_now = models.BooleanField(default=False, editable=False)
+    full_download_now = models.BooleanField(default=False, editable=True)
     failed = models.BooleanField(default=False, editable=False)
     message = models.CharField(max_length=1000, editable=False)
     retry_times = models.IntegerField(default=0, editable=False)
