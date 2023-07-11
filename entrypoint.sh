@@ -11,6 +11,7 @@ echo
 python manage.py runtransfer &
 python manage.py runsamplingdownloader &
 python manage.py runleecher &
+python manage.py runresume &
 echo
 
 wait -n
