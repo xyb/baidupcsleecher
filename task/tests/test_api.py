@@ -15,6 +15,32 @@ class TaskViewSetTestCase(APITestCase):
         self.task = Task.objects.create(
             shared_link="https://pan.baidu.com/s/123abc?pwd=def",
         )
+        self.task.set_files(
+            [
+                {
+                    "path": "张楚",
+                    "is_dir": True,
+                    "is_file": False,
+                    "size": 0,
+                    "md5": None,
+                },
+                {
+                    "path": "张楚/孤独的人是可耻的.mp3",
+                    "is_dir": False,
+                    "is_file": True,
+                    "size": 9518361,
+                    "md5": "6d5bea8001e9db88f8cd8145aaf8cce4",
+                },
+                {
+                    "path": "张楚/蚂蚁蚂蚁.mp3",
+                    "is_dir": False,
+                    "is_file": True,
+                    "size": 1234567,
+                    "md5": "1eec826501e9db88f8cd8145aaf8cce4",
+                },
+            ],
+        )
+        self.task.save()
 
     def test_create_task(self):
         url = reverse("task-list")
@@ -57,7 +83,7 @@ class TaskViewSetTestCase(APITestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json(), [])
+        self.assertEqual(len(response.json()), 3)
 
     def test_captcha_action(self):
         url = reverse("task-captcha", args=[self.task.id])
@@ -195,3 +221,9 @@ class TaskViewSetTestCase(APITestCase):
         assert task.status == Task.Status.SAMPLING_DOWNLOADED
         assert task.failed is False
         assert task.message == ""
+
+    def test_files(self):
+        assert self.task.total_files == 2
+        assert self.task.total_size == 10752928
+        assert self.task.largest_file == "张楚/孤独的人是可耻的.mp3"
+        assert self.task.largest_file_size == 9518361

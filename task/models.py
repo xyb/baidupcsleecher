@@ -1,4 +1,5 @@
 from json import dumps
+from json import loads
 from os import makedirs
 from os import walk
 from os.path import getsize
@@ -116,6 +117,9 @@ class Task(models.Model):
             file_list.append(file)
         self.files = dumps(file_list)
 
+    def load_files(self):
+        return loads(self.files or "[]") or []
+
     def list_local_files(self):
         data_path = self.data_path
         for root, dirs, files in walk(data_path):
@@ -123,6 +127,33 @@ class Task(models.Model):
                 filepath = join(root, file)
                 sub_path = filepath[len(str(data_path)) + 1 :]
                 yield {"file": sub_path, "size": getsize(filepath)}
+
+    @property
+    def total_files(self):
+        return len([f for f in self.load_files() if f["is_file"]])
+
+    @property
+    def total_size(self):
+        return sum([f["size"] for f in self.load_files()])
+
+    def get_largest_file(self):
+        files = self.load_files()
+        if files:
+            return max([(f["size"], f["path"]) for f in files])
+
+    @property
+    def largest_file(self):
+        largest = self.get_largest_file()
+        if largest:
+            size, path = largest
+            return path
+
+    @property
+    def largest_file_size(self):
+        largest = self.get_largest_file()
+        if largest:
+            size, path = largest
+            return size
 
     @classmethod
     def filter_ready_to_transfer(cls):
