@@ -1,3 +1,4 @@
+from django.conf import settings
 from rest_framework import serializers
 
 from .models import Task
@@ -44,6 +45,10 @@ class TaskSerializer(serializers.HyperlinkedModelSerializer):
         data["shared_id"] = link["id"]
         if not shared_password and link["password"]:
             data["shared_password"] = link["password"]
+
+        full_download_now = data.get("full_download_now")
+        if full_download_now is None:
+            data["full_download_now"] = settings.FULL_DOWNLOAD_IMMEDIATELY
         return data
 
 
