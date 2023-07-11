@@ -264,10 +264,24 @@ class Task(models.Model):
             or e == "BaiduPCS._request"
             or "error_code: -65," in e
             or "操作过于频繁，请您稍后重试" in e
+            or "urlopen error [Errno 104] Connection reset by peer" in e
+            or "urlopen error [Errno 99] Cannot assign requested address" in e
+            or "ConnectionResetError(104, 'Connection reset" in e
         ):
             return True
 
-        if "error_code: 105," in e or "啊哦，链接错误没找到文件，请打开正确的分享链接" in e:
+        if (
+            "error_code: 105," in e
+            or "啊哦，链接错误没找到文件，请打开正确的分享链接" in e
+            or "error_code: 31066," in e
+            or "message: 文件不存在" in e
+            or "error_code: 2," in e
+            or "message: 参数错误" in e
+            or "error_code: -7," in e
+            or "message: 该分享已删除或已取消" in e
+            or "error_code: -12," in e
+            or "message: 访问密码错误" in e
+        ):
             return False
 
         # assume task is not recoverable by default to avoid flood requests
