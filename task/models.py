@@ -85,6 +85,12 @@ class Task(models.Model):
             models.Index(fields=["status"]),
         ]
 
+    def __repr__(self):
+        return f"<Task id={self.id}, {self.shared_id} with {self.total_files} files>"
+
+    def __str__(self):
+        return repr(self)
+
     @property
     def path(self):
         return f"{self.shared_id}.{self.shared_password}"
