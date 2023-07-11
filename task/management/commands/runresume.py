@@ -19,16 +19,18 @@ class Command(BaseCommand):
             help="resume all failed tasks once and exit immediately.",
         )
 
+    def resume_once(self):
+        for task in Task.filter_failed():
+            if not task.recoverable:
+                continue
+            if task.retry_times >= settings.RETRY_TIMES_LIMIT:
+                continue
+            task.schedule_resume()
+
     def handle(self, *args, **options):
         logger.info("auto resume failed but recoverable tasks.")
         while True:
-            for task in Task.filter_failed():
-                if not task.recoverable:
-                    continue
-                if task.retry_times >= settings.RETRY_TIMES_LIMIT:
-                    continue
-                task.resume()
-
+            self.resume_once()
             if options["once"]:
                 logger.info("auto resume tasks once and exit now.")
                 return
