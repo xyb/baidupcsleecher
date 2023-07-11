@@ -58,6 +58,7 @@ REMOTE_LEECHER_DIR = str(Path(getenv("REMOTE_LEECHER_DIR", "/leecher")).resolve(
 RUNNER_SLEEP_SECONDS = int(getenv("RUNNER_SLEEP_SECONDS", "5"))
 SAMPLE_SIZE = int(getenv("SAMPLE_SIZE", "10240"))
 FULL_DOWNLOAD_IMMEDIATELY = bool(int(getenv("FULL_DOWNLOAD_IMMEDIATELY", 0)))
+RETRY_TIMES_LIMIT = int(getenv("RETRY_TIMES_LIMIT", 5))
 # shared link transfer policy: always, if_not_present
 TRANSFER_POLICY = getenv("TRANSFER_POLICY", "if_not_present")
 PAN_BAIDU_BDUSS = getenv("PAN_BAIDU_BDUSS", "")
