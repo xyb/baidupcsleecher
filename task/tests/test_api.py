@@ -52,6 +52,20 @@ class TaskViewSetTestCase(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Task.objects.count(), 2)
+        assert response.json()["full_download_now"] is False
+
+    def test_create_task_full_download_now(self):
+        url = reverse("task-list")
+        data = {
+            "shared_link": "https://pan.baidu.com/s/badbeef?pwd=bee",
+            "full_download_now": True,
+        }
+
+        response = self.client.post(url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Task.objects.count(), 2)
+        assert response.json()["full_download_now"] is True
 
     def test_retrieve_task(self):
         url = reverse("task-detail", args=[self.task.id])

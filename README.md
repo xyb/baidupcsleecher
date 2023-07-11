@@ -173,7 +173,7 @@ REMOTE_LEECHER_DIR = "/leecher"
 RUNNER_SLEEP_SECONDS = 5
 # download the first block of file as sample
 SAMPLE_SIZE = 10240
-# whether to download full files, disabled by default
+# whether to download full files immediately, or must trigger `full_download_now` manually. disabled by default
 FULL_DOWNLOAD_IMMEDIATELY = 0
 # shared link transfer policy: always, if_not_present (default)
 TRANSFER_POLICY = "if_not_present"
