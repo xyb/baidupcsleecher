@@ -32,7 +32,7 @@ class TaskViewSet(
     queryset = Task.objects.all().order_by("-id")
     serializer_class = TaskSerializer
     filter_backends = (filters.DjangoFilterBackend,)
-    filterset_fields = ("shared_link", "status")
+    filterset_fields = ("shared_link", "shared_id", "status", "failed")
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
