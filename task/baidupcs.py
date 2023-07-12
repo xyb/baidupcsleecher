@@ -7,16 +7,19 @@ from pathlib import Path
 from pathlib import PurePosixPath
 from time import sleep
 
-import requests
 from baidupcs_py.baidupcs import BaiduPCSApi
 from baidupcs_py.baidupcs import BaiduPCSError
 from baidupcs_py.baidupcs import PCS_UA
 from django.conf import settings
 
 from .utils import cookies2dict
+from .utils import download_url
 from .utils import unify_shared_link
 
 logger = logging.getLogger("baibupcs")
+
+BaiduPCSErrorCodeCaptchaNeeded = -62
+BaiduPCSErrorCodeCaptchaIsIncorrect = -9
 
 
 class CaptchaRequired(ValueError):
@@ -120,15 +123,7 @@ class BaiduPCSClient:
             # TODO 'Range': 'bytes=%d-' % resume_byte_pos,
         }
 
-        resp = requests.get(url, headers=headers, stream=True)
-        total = 0
-        with open(local_path, "wb") as f:
-            for chunk in resp.iter_content(chunk_size=10240):
-                if chunk:
-                    f.write(chunk)
-                    total += len(chunk)
-                if sample_size > 0 and total >= sample_size:
-                    return total
+        total = download_url(local_path, url, headers, limit=sample_size)
         return total
 
     def leech(self, remote_dir, local_dir, sample_size=0):
@@ -294,15 +289,19 @@ def access_shared(
             captcha_code,
         )
     except BaiduPCSError as err:
-        if err.error_code not in (-9, -62):
+        if err.error_code not in (
+            BaiduPCSErrorCodeCaptchaIsIncorrect,
+            BaiduPCSErrorCodeCaptchaNeeded,
+        ):
             raise err
-        if err.error_code == -62:  # -62: '可能需要输入验证码'
+        if err.error_code == BaiduPCSErrorCodeCaptchaNeeded:  # '可能需要输入验证码'
             logger.warning("captcha needed!")
-        if err.error_code == -9:
+        if err.error_code == BaiduPCSErrorCodeCaptchaIsIncorrect:
             logger.error("captcha is incorrect!")
 
         captcha_id, captcha_img_url = client.api.getcaptcha(shared_url)
         logger.debug(f"captcha: {captcha_id}, url {captcha_img_url}")
         content = client.api.get_vcode_img(captcha_img_url, shared_url)
-        callback_save_captcha(captcha_id, captcha_img_url, content)
+        if callback_save_captcha:
+            callback_save_captcha(captcha_id, captcha_img_url, content)
         raise CaptchaRequired()
