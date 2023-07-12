@@ -5,6 +5,8 @@ from http.cookies import SimpleCookie
 from urllib.parse import parse_qs
 from urllib.parse import urlparse
 
+import requests
+
 SHARED_URL_PREFIX = "https://pan.baidu.com/s/"
 
 logger = logging.getLogger(__name__)
@@ -76,3 +78,16 @@ def parse_shared_link(url: str) -> str:
 def unify_shared_link(url):
     result = parse_shared_link(url)
     return SHARED_URL_PREFIX + result["id"]
+
+
+def download_url(local_path, url, headers, limit=0):
+    resp = requests.get(url, headers=headers, stream=True)
+    total = 0
+    with open(local_path, "wb") as f:
+        for chunk in resp.iter_content(chunk_size=10240):
+            if chunk:
+                f.write(chunk)
+                total += len(chunk)
+            if limit > 0 and total >= limit:
+                return total
+    return total
