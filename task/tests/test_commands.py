@@ -81,6 +81,50 @@ class TransferCommandTest(TestCase):
         assert task.status == Task.Status.TRANSFERRED
 
 
+class SamplingDownloaderCommandTest(TestCase):
+    def setUp(self):
+        self.task = Task.objects.create(shared_id="foo", shared_password="foo")
+        self.task.status = Task.Status.TRANSFERRED
+        self.task.started_at = self.task.created_at
+        self.task.transfer_completed_at = self.task.created_at
+        self.task.save()
+
+        self.bduss = "test_bduss"
+        self.cookies = {"BDUSS": "test_cookie"}
+        self.api = MagicMock(spec=BaiduPCSApi)
+        self.api._baidupcs = MagicMock()
+        self.baidupcs = BaiduPCS(
+            self.bduss,
+            self.cookies,
+            api=self.api,
+        )
+
+    @mock.patch("task.baidupcs.save_shared", return_value=None)
+    @mock.patch.object(api.BaiduPCS, "access_shared", return_value={})
+    @mock.patch.object(BaiduPCSApi, "list", return_value={})
+    @mock.patch(
+        "task.utils.parse_shared_link",
+        return_value={"id": "foo", "password": "foo"},
+    )
+    @mock.patch.object(Session, "request", side_effect=mocked_requests)
+    @mock.patch("requests.get", side_effect=mocked_requests)
+    @mock.patch("requests.post", side_effect=mocked_requests)
+    def test_transfer(
+        self,
+        mock_post,
+        mock_get,
+        mock_sget,
+        mock_parse,
+        mock_list,
+        mock_access,
+        mock_save,
+    ):
+        call_command("runsamplingdownloader", "--once")
+
+        task = Task.objects.get(pk=self.task.id)
+        assert task.status == Task.Status.SAMPLING_DOWNLOADED
+
+
 class ResumeCommandTest(TestCase):
     def setUp(self):
         self.task = Task.objects.create(shared_id="foo", shared_password="foo")
