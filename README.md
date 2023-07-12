@@ -1,6 +1,10 @@
 # baidupcsleecher
 Asynchronous downloader for sharing files via Baidu Cloud Drive based on [BaiduPCS-Py](https://github.com/PeterDing/BaiduPCS-Py).
 
+[![test](https://github.com/xyb/baidupcsleecher/actions/workflows/test.yml/badge.svg)](https://github.com/xyb/baidupcsleecher/actions/workflows/test.yml)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/4635fe04eff92eb05cf3/test_coverage)](https://codeclimate.com/github/xyb/baidupcsleecher/test_coverage)
+[![Maintainability](https://api.codeclimate.com/v1/badges/4635fe04eff92eb05cf3/maintainability)](https://codeclimate.com/github/xyb/baidupcsleecher/maintainability)
+
 ## Features
 
 - download shared files via Baidu Cloud Drive (百度云盘)
