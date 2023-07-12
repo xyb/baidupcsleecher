@@ -1,14 +1,13 @@
 from unittest import mock
-from unittest.mock import MagicMock
 
 from baidupcs_py.baidupcs import api
 from baidupcs_py.baidupcs import BaiduPCSApi
 from django.conf import settings
 from django.core.management import call_command
+from django.test import override_settings
 from django.test import TestCase
 from requests import Session
 
-from task.baidupcs import BaiduPCS
 from task.management.commands.runresume import Command as ResumeCommand
 from task.models import Task
 
@@ -43,15 +42,6 @@ def mocked_requests(*args, **kwargs):
 class TransferCommandTest(TestCase):
     def setUp(self):
         self.task = Task.objects.create(shared_id="foo", shared_password="foo")
-        self.bduss = "test_bduss"
-        self.cookies = {"BDUSS": "test_cookie"}
-        self.api = MagicMock(spec=BaiduPCSApi)
-        self.api._baidupcs = MagicMock()
-        self.baidupcs = BaiduPCS(
-            self.bduss,
-            self.cookies,
-            api=self.api,
-        )
 
     @mock.patch("task.baidupcs.save_shared", return_value=None)
     @mock.patch.object(api.BaiduPCS, "access_shared", return_value={})
@@ -63,6 +53,8 @@ class TransferCommandTest(TestCase):
     @mock.patch.object(Session, "request", side_effect=mocked_requests)
     @mock.patch("requests.get", side_effect=mocked_requests)
     @mock.patch("requests.post", side_effect=mocked_requests)
+    @override_settings(PAN_BAIDU_BDUSS="xyb")
+    @override_settings(PAN_BAIDU_COOKIES="BAIDUID=x; BDUSS=y; STOKEN=b")
     def test_transfer(
         self,
         mock_post,
@@ -73,6 +65,7 @@ class TransferCommandTest(TestCase):
         mock_access,
         mock_save,
     ):
+        print(settings.PAN_BAIDU_COOKIES)
         call_command("runtransfer", "--once")
 
         task = Task.objects.get(pk=self.task.id)
@@ -87,16 +80,6 @@ class SamplingDownloaderCommandTest(TestCase):
         self.task.transfer_completed_at = self.task.created_at
         self.task.save()
 
-        self.bduss = "test_bduss"
-        self.cookies = {"BDUSS": "test_cookie"}
-        self.api = MagicMock(spec=BaiduPCSApi)
-        self.api._baidupcs = MagicMock()
-        self.baidupcs = BaiduPCS(
-            self.bduss,
-            self.cookies,
-            api=self.api,
-        )
-
     @mock.patch("task.baidupcs.save_shared", return_value=None)
     @mock.patch.object(api.BaiduPCS, "access_shared", return_value={})
     @mock.patch.object(BaiduPCSApi, "list", return_value={})
@@ -107,7 +90,9 @@ class SamplingDownloaderCommandTest(TestCase):
     @mock.patch.object(Session, "request", side_effect=mocked_requests)
     @mock.patch("requests.get", side_effect=mocked_requests)
     @mock.patch("requests.post", side_effect=mocked_requests)
-    def test_transfer(
+    @override_settings(PAN_BAIDU_BDUSS="xyb")
+    @override_settings(PAN_BAIDU_COOKIES="BAIDUID=x; BDUSS=y; STOKEN=b")
+    def test_downloader(
         self,
         mock_post,
         mock_get,
@@ -133,16 +118,6 @@ class LeecherCommandTest(TestCase):
         self.task.full_download_now = True
         self.task.save()
 
-        self.bduss = "test_bduss"
-        self.cookies = {"BDUSS": "test_cookie"}
-        self.api = MagicMock(spec=BaiduPCSApi)
-        self.api._baidupcs = MagicMock()
-        self.baidupcs = BaiduPCS(
-            self.bduss,
-            self.cookies,
-            api=self.api,
-        )
-
     @mock.patch("task.baidupcs.save_shared", return_value=None)
     @mock.patch.object(api.BaiduPCS, "access_shared", return_value={})
     @mock.patch.object(BaiduPCSApi, "list", return_value={})
@@ -153,7 +128,9 @@ class LeecherCommandTest(TestCase):
     @mock.patch.object(Session, "request", side_effect=mocked_requests)
     @mock.patch("requests.get", side_effect=mocked_requests)
     @mock.patch("requests.post", side_effect=mocked_requests)
-    def test_transfer(
+    @override_settings(PAN_BAIDU_BDUSS="xyb")
+    @override_settings(PAN_BAIDU_COOKIES="BAIDUID=x; BDUSS=y; STOKEN=b")
+    def test_leecher(
         self,
         mock_post,
         mock_get,
