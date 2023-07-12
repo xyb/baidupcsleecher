@@ -6,12 +6,12 @@ from baidupcs_py.baidupcs import BaiduPCSApi
 from baidupcs_py.baidupcs.errors import BaiduPCSError
 from baidupcs_py.baidupcs.inner import PcsSharedPath
 
-from task.baidupcs import BaiduPCS
+from task.baidupcs import BaiduPCSClient
 from task.baidupcs import get_baidupcs_client
 from task.baidupcs import save_shared
 
 
-@patch("task.baidupcs.BaiduPCS")
+@patch("task.baidupcs.BaiduPCSClient")
 @patch("task.baidupcs.settings")
 @patch("task.baidupcs.cookies2dict")
 def test_get_baidupcs_client(mock_cookies2dict, mock_settings, mock_BaiduPCS):
@@ -52,7 +52,7 @@ class TestBaiduPCS(unittest.TestCase):
                     md5="789012",
                 ),
             ]
-            self.pcs = BaiduPCS(self.bduss, self.cookies)
+            self.pcs = BaiduPCSClient(self.bduss, self.cookies)
         self.pcs.api.access_shared = MagicMock()
 
     def test_list_files(self):
@@ -82,7 +82,7 @@ class TestSaveShared(unittest.TestCase):
         self.cookies = {"BDUSS": "test_cookie"}
         self.api = MagicMock(spec=BaiduPCSApi)
         self.api._baidupcs = MagicMock()
-        self.baidupcs = BaiduPCS(
+        self.client = BaiduPCSClient(
             self.bduss,
             self.cookies,
             api=self.api,
@@ -92,7 +92,7 @@ class TestSaveShared(unittest.TestCase):
         shared_url = "https://pan.baidu.com/s/1test"
         remotedir = "/test_remote_dir"
         password = "pwd"
-        self.baidupcs.api.shared_paths.return_value = [
+        self.client.api.shared_paths.return_value = [
             PcsSharedPath(
                 fs_id=1,
                 path="/sharelink1-2/1",
@@ -124,16 +124,16 @@ class TestSaveShared(unittest.TestCase):
                 bdstoken="ffee",
             ),
         ]
-        self.baidupcs.api.exists.return_value = False
-        self.baidupcs.api.makedir.return_value = None
-        self.baidupcs.api.transfer_shared_paths.side_effect = BaiduPCSError(
+        self.client.api.exists.return_value = False
+        self.client.api.makedir.return_value = None
+        self.client.api.transfer_shared_paths.side_effect = BaiduPCSError(
             "Error message",
             12,
         )
-        self.baidupcs.api.list_shared_paths.return_value = []
+        self.client.api.list_shared_paths.return_value = []
 
-        save_shared(self.baidupcs, shared_url, remotedir, password)
+        save_shared(self.client, shared_url, remotedir, password)
 
-        self.baidupcs.api.shared_paths.assert_called_with(shared_url)
-        self.baidupcs.api.exists.assert_called_with(remotedir)
-        self.baidupcs.api.transfer_shared_paths.assert_called()
+        self.client.api.shared_paths.assert_called_with(shared_url)
+        self.client.api.exists.assert_called_with(remotedir)
+        self.client.api.transfer_shared_paths.assert_called()
