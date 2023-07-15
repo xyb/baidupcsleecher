@@ -155,6 +155,10 @@ class Task(models.Model):
         return len([f for f in self.load_files() if f["is_file"]])
 
     @property
+    def local_size(self):
+        return sum([f["size"] for f in self.local_files])
+
+    @property
     def total_size(self):
         return sum([f["size"] for f in self.load_files()])
 
@@ -266,6 +270,15 @@ class Task(models.Model):
         for name, done in self.get_steps():
             if done in ["doing", "failed"]:
                 return name
+
+    @property
+    def current_step(self):
+        return self.get_current_step()
+
+    @property
+    def is_downloading(self):
+        # return self.current_step == 'downloading_files'
+        return True
 
     def get_resume_method_name(self):
         resume_methods = {
