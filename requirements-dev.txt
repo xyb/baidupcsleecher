@@ -1,4 +1,4 @@
--r requirements-test.txt
+-r requirements.txt
 pre-commit
 pytest-watch
 django-browser-reload
