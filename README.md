@@ -7,10 +7,11 @@ Asynchronous downloader for sharing files via Baidu Cloud Drive based on [BaiduP
 
 ## Features
 
-- download shared files via Baidu Cloud Drive (百度云盘)
-- drive via restful API
-- pre-download sampling of files to determine file type or mime type
-- optional callback to notify task status changes
+- [x] download shared files via Baidu Cloud Drive (百度云盘)
+- [x] drive via restful API
+- [x] pre-download sampling of files to determine file type or mime type
+- [x] optional callback to notify task status changes
+- [ ] a simple ui that works directly with your browser
 
 ## API
 
@@ -50,7 +51,14 @@ The creation API will return the task object:
   "sample_downloaded_at": null,
   "full_downloaded_at": null,
   "full_download_now": false,
+  "total_files": 0,
+  "total_size": 0,
+  "largest_file": null,
+  "largest_file_size": null,
+  "done": false,
   "failed": false,
+  "recoverable": false,
+  "retry_times": 0,
   "message": "",
   "captcha_required": false,
   "captcha_url": "",
@@ -165,6 +173,11 @@ $ curl -X POST localhost:8000/task/${task_id}/restart_downloading/
 ```
 This simply restarts the download process for samples and full files, but skips the steps of saving and retrieving the file list.
 
+## simple ui
+You can also directly use the browser to access the simple web interface that comes with the service, submit download tasks, and view the task list.
+
+The url should be like: http://localhost:8000/ui/
+
 ## Configuration
 
 You should customize your configuration to suit your requirements. All configurations can be set via environment variables. The following are the configured default values:
@@ -179,6 +192,8 @@ RUNNER_SLEEP_SECONDS = 5
 SAMPLE_SIZE = 10240
 # whether to download full files immediately, or must trigger `full_download_now` manually. disabled by default
 FULL_DOWNLOAD_IMMEDIATELY = 0
+# if the download process is interrupted, it will be retried until the limit is reached
+RETRY_TIMES_LIMIT = 5
 # shared link transfer policy: always, if_not_present (default)
 TRANSFER_POLICY = "if_not_present"
 # For PAN_BAIDU_BDUSS and PAN_BAIDU_COOKIES, please check the documentation of BaiduPCS-Py
