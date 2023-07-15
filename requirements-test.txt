@@ -1,5 +1,6 @@
--r requirements.txt
+-r requirements-dev.txt
 pytest
 pytest-django
 pytest-coverage
 pytest-socket
+django_coverage_plugin

@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Baidu Cloud Storage Leecher{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha384-zMEydMdp5mC+i11DwQRMHxzvFhmCbjZtR+KrIUQRc1uJJCq7NTXDSHVLozUvqPEB" crossorigin="anonymous">
+</head>
+
+<body class="bg-gray-100">
+  <div class="container mx-auto p-4">
+    <!-- content area -->
+    {% block content %}{% endblock %}
+  </div>
+
+  <footer class="mt-auto">
+    {% block footer %}{% endblock %}
+  </footer>
+</body>
+</html>

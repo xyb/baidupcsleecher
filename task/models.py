@@ -126,6 +126,18 @@ class Task(models.Model):
     def load_files(self):
         return loads(self.files or "[]") or []
 
+    def list_remote_files(self, files_only=True):
+        if not self.files:
+            return []
+        files = loads(self.files)
+        if files_only:
+            files = [i for i in files if i.get("is_file")]
+        return files
+
+    @property
+    def remote_files(self):
+        return self.list_remote_files(files_only=True)
+
     def list_local_files(self):
         data_path = self.data_path
         for root, dirs, files in walk(data_path):
@@ -135,8 +147,16 @@ class Task(models.Model):
                 yield {"file": sub_path, "size": getsize(filepath)}
 
     @property
+    def local_files(self):
+        return list(self.list_local_files())
+
+    @property
     def total_files(self):
         return len([f for f in self.load_files() if f["is_file"]])
+
+    @property
+    def local_size(self):
+        return sum([f["size"] for f in self.local_files])
 
     @property
     def total_size(self):
@@ -250,6 +270,14 @@ class Task(models.Model):
         for name, done in self.get_steps():
             if done in ["doing", "failed"]:
                 return name
+
+    @property
+    def current_step(self):
+        return self.get_current_step()
+
+    @property
+    def is_downloading(self):
+        return self.current_step == "downloading_files"
 
     def get_resume_method_name(self):
         resume_methods = {
