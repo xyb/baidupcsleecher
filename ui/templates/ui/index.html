@@ -149,7 +149,7 @@
 <div class="pagination py-6 px-4 text-center sm:p-6 md:py-10 md:px-8">
   <div class="inline-flex items-center justify-center gap-3">
     {% if page.has_previous %}
-    <a href="?page=1"
+    <a href="?per_page={{ per_page }}&page=1"
       class="inline-flex h-8 w-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180">
       <span class="sr-only">First Page</span>
       <svg class="h-6 w-6 text-gray-500" width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
@@ -159,9 +159,9 @@
         <polyline points="17 7 12 12 17 17" />
       </svg>
     </a>
-    <a href="?page={{ page.previous_page_number }}"
+    <a href="?per_page={{ per_page }}&page={{ page.previous_page_number }}"
       class="inline-flex h-8 w-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180">
-      <span class="sr-only">Next Page</span>
+      <span class="sr-only">Prev Page</span>
       <svg class="h-6 w-6 text-gray-500" width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
         stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
         <path stroke="none" d="M0 0h24v24H0z" />
@@ -171,13 +171,11 @@
     {% endif %}
 
     <p class="text-xl text-gray-900">
-      {{ page.number }}
-      <span class="mx-0.25">/</span>
-      {{ page.paginator.num_pages }} Pages
+      {{ page.number }} / {{ page.paginator.num_pages }} Pages
     </p>
 
     {% if page.has_next %}
-    <a href="?page={{ page.next_page_number }}"
+    <a href="?per_page={{ per_page }}&page={{ page.next_page_number }}"
       class="inline-flex h-8 w-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180">
       <span class="sr-only">Next Page</span>
       <svg class="h-6 w-6 text-gray-500" width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
@@ -186,7 +184,7 @@
         <polyline points="9 6 15 12 9 18" />
       </svg>
     </a>
-    <a href="?page={{ page.paginator.num_pages }}"
+    <a href="?per_page={{ per_page }}&page={{ page.paginator.num_pages }}"
       class="inline-flex h-8 w-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180">
       <span class="sr-only">Last Page</span>
       <svg class="h-6 w-6 text-gray-500" width="24" height="24" viewBox="0 0 24 24" stroke-width="2"

@@ -12,4 +12,4 @@ def index(request):
     paginator = Paginator(tasks, per_page=per_page)
     page = paginator.get_page(page_number)
 
-    return render(request, "ui/index.html", {"page": page})
+    return render(request, "ui/index.html", {"page": page, "per_page": per_page})
