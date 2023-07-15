@@ -32,6 +32,14 @@ repos:
     hooks:
       - id: lint
 
+  - repo: https://github.com/rtts/djhtml
+    rev: '3.0.6'  # replace with the latest tag on GitHub
+    hooks:
+      - id: djhtml
+        entry: djhtml --tabwidth 2
+      - id: djcss
+      - id: djjs
+
   - repo: https://github.com/asottile/pyupgrade
     rev: v3.2.0
     hooks:
