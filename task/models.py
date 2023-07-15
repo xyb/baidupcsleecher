@@ -277,8 +277,7 @@ class Task(models.Model):
 
     @property
     def is_downloading(self):
-        # return self.current_step == 'downloading_files'
-        return True
+        return self.current_step == "downloading_files"
 
     def get_resume_method_name(self):
         resume_methods = {

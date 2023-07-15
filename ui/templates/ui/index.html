@@ -5,26 +5,34 @@
 {% endblock %}
 
 {% block content %}
-<h1 class="text-2xl font-bold mb-4">文件下载任务</h1>
+<h1 class="text-2xl font-bold mb-4">Leecher</h1>
 
+{% comment %}
 <!-- add task -->
 <form class="mb-4">
   <div class="flex flex-col md:flex-row mb-2">
     <input type="text" class="w-full md:w-1/2 px-4 py-2 border rounded-l-md rounded-t-md focus:outline-none"
-      placeholder="输入下载链接">
+      placeholder="Input the share link to download / 输入下载链接">
     <button type="submit"
-      class="w-full md:w-1/2 bg-blue-500 text-white px-4 py-2 rounded-r-md rounded-t-md focus:outline-none hover:bg-blue-600 transition duration-200">添加任务</button>
+      class="w-full md:w-1/2 bg-blue-500 text-white px-4 py-2 rounded-r-md rounded-t-md focus:outline-none hover:bg-blue-600 transition duration-200">
+      Add Task / 添加下载任务
+    </button>
   </div>
 </form>
+{% endcomment %}
 
+{% comment %}
 <!-- search -->
-<input type="text" class="w-full px-4 py-2 mb-4 border rounded-md focus:outline-none" placeholder="搜索任务">
+<input type="text" class="w-full px-4 py-2 mb-4 border rounded-md focus:outline-none"
+  placeholder="Search Link / 搜索下载任务">
+{% endcomment %}
 
 <!-- tasks -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
   {% for task in page %}
   <div class="bg-white p-6 rounded-lg shadow-lg">
+    <!-- task status -->
     <div class="flex items-baseline">
       {% if task.done %}
       <div
@@ -48,59 +56,67 @@
       </div>
     </div>
 
+    <!-- the largest file -->
     <div class="mt-1 text-gray-600 text-xl truncate text-center">
-      {{ task.largest_file }}
+      <span class="text-base">
+        {{ task.largest_file | default:"[waiting for file list]" }}
+      </span>
       <span class="text-xs">
         {{ task.largest_file_size | filesizeformat }}
       </span>
     </div>
 
+    <!-- summary -->
     <div class="grid grid-cols-2 my-2 justify-items-center gap-4">
       <div class="text-center">
         <div class="text-xl text-sky-500">Files</div>
-        <div class="text-2xl">{{ task.total_files }}</div>
+        <div class="font-mono text-3xl text-gray-600">{{ task.total_files }}</div>
       </div>
       <div class="text-center">
         <div class="text-xl text-sky-500">Size</div>
-        <div class="text-2xl">{{ task.total_size | filesizeformat }}</div>
+        <div class="font-mono text-3xl text-gray-600">{{ task.total_size | filesizeformat }}</div>
       </div>
     </div>
 
+    <!-- summary -->
+    {% comment %}
     {% if task.is_downloading %}
-      {% comment %}
-        {% widthratio task.local_files|length task.total_files 100 %}%
-      {% endcomment %}
+    {% widthratio task.local_files|length task.total_files 100 %}%
+    {% endcomment %}
     <div>
-        <div class="h-3 relative max-w-xl rounded-full overflow-hidden">
-          <div class="w-full h-full bg-gray-200 absolute"></div>
-          <div class="h-full bg-green-500 absolute"
-            style="width:{% widthratio task.local_size task.total_size 100 %}%"></div>
+      <div class="h-3 relative max-w-xl rounded-full overflow-hidden">
+        <div class="w-full h-full bg-gray-200 absolute"></div>
+        <div class="h-full bg-green-400 absolute" style="width:{% widthratio task.local_size task.total_size 100 %}%">
         </div>
+      </div>
     </div>
-    {% endif %}
 
     <div class="flex mt-4 text-right">
-      <div class="flex items-left mt-1 inline-block text-gray-200 text-xs font-semibold truncate">
+      <!-- shared id and password -->
+      <div class="flex-auto flex items-left mt-1 inline-block text-gray-200 text-xs font-semibold truncate">
         <span class="truncate">
           {{ task.shared_id }}
         </span>
+        {% if task.shared_password %}
         /
         <span>
           {{ task.shared_password }}
         </span>
+        {% endif %}
       </div>
+
+      <!-- status of every steps -->
       <div class="flex items-right">
-        {% if task.transfer_completed_at %}
-        <svg class="h-6 w-6 text-green-500 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="h-6 w-6 {{ task.transfer_completed_at | yesno:" text-green-500,text-stone-400" }} inline"
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
           <circle cx="5.5" cy="11.5" r="4.5" />
           <circle cx="18.5" cy="11.5" r="4.5" />
           <line x1="5.5" y1="16" x2="18.5" y2="16" />
         </svg>
-        {% endif %}
-        {% if task.sample_downloaded_at %}
-        <svg class="h-6 w-6 text-green-500 inline" width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
-          stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="h-6 w-6 {{ task.sample_downloaded_at | yesno:" text-green-500,text-stone-400" }} inline" width="24"
+          height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+          stroke-linejoin="round">
           <path stroke="none" d="M0 0h24v24H0z" />
           <path d="M9 5H7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2V7a2 2 0 0 0 -2 -2h-2" />
           <rect x="9" y="3" width="6" height="4" rx="2" />
@@ -109,19 +125,19 @@
           <line x1="9" y1="16" x2="9.01" y2="16" />
           <line x1="13" y1="16" x2="15" y2="16" />
         </svg>
-        {% endif %}
-        {% if task.full_downloaded_at %}
-        <svg class="h-6 w-6 text-green-500 inline" width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
-          stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="h-6 w-6 {{ task.full_downloaded_at | yesno:" text-green-500,text-stone-400" }} inline" width="24"
+          height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+          stroke-linejoin="round">
           <path stroke="none" d="M0 0h24v24H0z" />
           <rect x="3" y="4" width="18" height="4" rx="2" />
           <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
           <line x1="10" y1="12" x2="14" y2="12" />
         </svg>
-        {% endif %}
+        {% if task.sample_downloaded_at %}
         <div class="text-gray-500">
           {% widthratio task.local_size task.total_size 100 %}%
         </div>
+        {% endif %}
       </div>
     </div>
 
@@ -129,6 +145,7 @@
   {% endfor %}
 </div>
 
+<!-- pagination -->
 <div class="pagination py-6 px-4 text-center sm:p-6 md:py-10 md:px-8">
   <div class="inline-flex items-center justify-center gap-3">
     {% if page.has_previous %}
