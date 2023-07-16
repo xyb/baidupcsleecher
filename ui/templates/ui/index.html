@@ -21,7 +21,6 @@
         </svg>
       </a>
     </div>
-
   </div>
 
 {% comment %}
@@ -44,37 +43,37 @@
   placeholder="Search Link / 搜索下载任务">
 {% endcomment %}
 
-<!-- tasks -->
+  <!-- tasks -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
     {% for task in page %}
       <div class="bg-white dark:bg-gray-800 dark:text-gray-300 p-6 rounded-lg shadow-lg">
-    <!-- task status -->
+        <!-- task status -->
         <div class="flex items-baseline">
           {% if task.done %}
             <div
-              class="bg-green-200 text-teal-800 text-xs px-2 inline-block rounded-full  uppercase font-semibold tracking-wide">
+              class="bg-green-200 dark:bg-green-600 text-teal-800 dark:text-teal-900 text-xs px-2 inline-block rounded-full uppercase font-semibold tracking-wide">
               Done
             </div>
           {% elif task.failed %}
             <div
-              class="bg-red-200 text-teal-800 text-xs px-2 inline-block rounded-full  uppercase font-semibold tracking-wide">
+              class="bg-red-200 dark:bg-red-600 text-teal-800 dark:text-teal-900 text-xs px-2 inline-block rounded-full uppercase font-semibold tracking-wide">
               {{ task.current_step }}
             </div>
           {% else %}
             <div
-              class="bg-teal-200 text-teal-800 text-xs px-2 inline-block rounded-full  uppercase font-semibold tracking-wide">
+              class="bg-teal-200 dark:bg-teal-600 text-teal-800 dark:text-teal-900 text-xs px-2 inline-block rounded-full uppercase font-semibold tracking-wide">
               {{ task.status }}
             </div>
           {% endif %}
 
-          <div class="ml-2 text-gray-600 uppercase text-xs font-semibold tracking-wider">
+          <div class="ml-2 text-gray-600 dark:text-gray-500 uppercase text-xs font-semibold tracking-wider">
             {{ task.created_at | timesince }}
           </div>
         </div>
 
-    <!-- the largest file -->
-        <div class="mt-1 text-gray-600 text-xl truncate text-center">
+        <!-- the largest file -->
+        <div class="mt-1 text-gray-600 dark:text-gray-500 5ext-xl truncate text-center">
           <span class="text-base">
             {{ task.largest_file | default:"[waiting for file list]" }}
           </span>
@@ -83,34 +82,34 @@
           </span>
         </div>
 
-    <!-- summary -->
+        <!-- summary -->
         <div class="grid grid-cols-2 my-2 justify-items-center gap-4">
           <div class="text-center">
-            <div class="text-xl text-sky-500">Files</div>
-            <div class="font-mono text-3xl text-gray-600">{{ task.total_files }}</div>
+            <div class="text-xl text-sky-500 dark:text-sky-700">Files</div>
+            <div class="font-mono text-3xl text-gray-600 dark:text-gray-500">{{ task.total_files }}</div>
           </div>
           <div class="text-center">
-            <div class="text-xl text-sky-500">Size</div>
-            <div class="font-mono text-3xl text-gray-600">{{ task.total_size | filesizeformat }}</div>
+            <div class="text-xl text-sky-500 dark:text-sky-700">Size</div>
+            <div class="font-mono text-3xl text-gray-600 dark:text-gray-500">{{ task.total_size | filesizeformat }}</div>
           </div>
         </div>
 
-    <!-- summary -->
-    {% comment %}
-    {% if task.is_downloading %}
-    {% widthratio task.local_files|length task.total_files 100 %}%
-    {% endcomment %}
+        <!-- percentage -->
+        {% comment %}
+        {% if task.is_downloading %}
+        {% widthratio task.local_files|length task.total_files 100 %}%
+        {% endcomment %}
         <div>
           <div class="h-3 relative max-w-xl rounded-full overflow-hidden">
-            <div class="w-full h-full bg-gray-200 absolute"></div>
-            <div class="h-full bg-green-400 absolute" style="width:{% widthratio task.local_size task.total_size 100 %}%">
+            <div class="w-full h-full bg-gray-200 dark:bg-gray-500 absolute"></div>
+            <div class="h-full bg-green-400 dark:bg-green-700 absolute" style="width:{% widthratio task.local_size task.total_size 100 %}%">
             </div>
           </div>
         </div>
 
         <div class="flex mt-4 text-right">
-      <!-- shared id and password -->
-          <div class="flex-auto flex items-left mt-1 inline-block text-gray-200 text-xs font-semibold truncate">
+          <!-- shared id and password -->
+          <div class="flex-auto flex items-left mt-1 inline-block text-gray-200 dark:text-gray-500 text-xs font-semibold truncate">
             <span class="truncate">
               {{ task.shared_id }}
             </span>
@@ -122,16 +121,16 @@
             {% endif %}
           </div>
 
-      <!-- status of every steps -->
+          <!-- status of every steps -->
           <div class="flex items-right">
-            <svg class="h-6 w-6 {{ task.transfer_completed_at | yesno:" text-green-500,text-stone-400" }} inline"
+            <svg class="h-6 w-6 {{ task.transfer_completed_at | yesno:" text-green-500 dark:text-green-800, text-stone-400 dark:text-stone-600" }} inline"
                  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                  stroke-linejoin="round">
               <circle cx="5.5" cy="11.5" r="4.5" />
               <circle cx="18.5" cy="11.5" r="4.5" />
               <line x1="5.5" y1="16" x2="18.5" y2="16" />
             </svg>
-            <svg class="h-6 w-6 {{ task.sample_downloaded_at | yesno:" text-green-500,text-stone-400" }} inline" width="24"
+            <svg class="h-6 w-6 {{ task.sample_downloaded_at | yesno:" text-green-500 dark:text-green-800, text-stone-400 dark:text-stone-600" }} inline" width="24"
                  height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
                  stroke-linejoin="round">
               <path stroke="none" d="M0 0h24v24H0z" />
@@ -142,7 +141,7 @@
               <line x1="9" y1="16" x2="9.01" y2="16" />
               <line x1="13" y1="16" x2="15" y2="16" />
             </svg>
-            <svg class="h-6 w-6 {{ task.full_downloaded_at | yesno:" text-green-500,text-stone-400" }} inline" width="24"
+            <svg class="h-6 w-6 {{ task.full_downloaded_at | yesno:" text-green-500 dark:text-green-800, text-stone-400 dark:text-stone-600" }} inline" width="24"
                  height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
                  stroke-linejoin="round">
               <path stroke="none" d="M0 0h24v24H0z" />
@@ -151,7 +150,7 @@
               <line x1="10" y1="12" x2="14" y2="12" />
             </svg>
             {% if task.sample_downloaded_at %}
-              <div class="text-gray-500">
+              <div class="text-gray-500 dark:text-gray-600">
                 {% widthratio task.local_size task.total_size 100 %}%
               </div>
             {% endif %}
@@ -167,7 +166,7 @@
     <div class="inline-flex items-center justify-center gap-3">
       {% if page.has_previous %}
         <a href="?per_page={{ per_page }}&page=1"
-           class="inline-flex h-8 w-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180">
+           class="inline-flex h-8 w-8 items-center justify-center rounded border border-gray-100 dark:border-gray-800 bg-white dark:bg-black text-gray-900 dark:text-gray-200 rtl:rotate-180">
           <span class="sr-only">First Page</span>
           <svg class="h-6 w-6 text-gray-500" width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
                stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -177,7 +176,7 @@
           </svg>
         </a>
         <a href="?per_page={{ per_page }}&page={{ page.previous_page_number }}"
-           class="inline-flex h-8 w-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180">
+           class="inline-flex h-8 w-8 items-center justify-center rounded border border-gray-100 dark:border-gray-800 bg-white dark:bg-black text-gray-900 dark:text-gray-200 rtl:rotate-180">
           <span class="sr-only">Prev Page</span>
           <svg class="h-6 w-6 text-gray-500" width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
                stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -187,13 +186,13 @@
         </a>
       {% endif %}
 
-      <p class="text-xl text-gray-900">
+      <p class="text-xl text-gray-900 dark:text-gray-500">
         {{ page.number }} / {{ page.paginator.num_pages }} Pages
       </p>
 
       {% if page.has_next %}
         <a href="?per_page={{ per_page }}&page={{ page.next_page_number }}"
-           class="inline-flex h-8 w-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180">
+           class="inline-flex h-8 w-8 items-center justify-center rounded border border-gray-100 dark:border-gray-800 bg-white dark:bg-black text-gray-900 dark:text-gray-200 rtl:rotate-180">
           <span class="sr-only">Next Page</span>
           <svg class="h-6 w-6 text-gray-500" width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
                stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -202,7 +201,7 @@
           </svg>
         </a>
         <a href="?per_page={{ per_page }}&page={{ page.paginator.num_pages }}"
-           class="inline-flex h-8 w-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180">
+           class="inline-flex h-8 w-8 items-center justify-center rounded border border-gray-100 dark:border-gray-800 bg-white dark:bg-black text-gray-900 dark:text-gray-200 rtl:rotate-180">
           <span class="sr-only">Last Page</span>
           <svg class="h-6 w-6 text-gray-500" width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
                stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
