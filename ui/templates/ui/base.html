@@ -23,6 +23,10 @@
   </body>
 
   <script>
+    document.body.addEventListener('htmx:configRequest', (event) => {
+      event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}'; //insert csrf token when performing AJAX request
+    })
+
     tailwind.config = {
       darkMode: 'class',
     }
