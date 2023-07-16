@@ -20,17 +20,21 @@
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
+    tailwind.config = {
+      darkMode: 'class',
+    }
+
     function setDarkMode(dark, preference) {
       if (dark) {
         preference !== "dark" ? localStorage.setItem('theme', 'dark') : localStorage.removeItem('theme');
         document.documentElement.classList.add('dark');
-        document.getElementById('dark').style.display = 'block';
-        document.getElementById('light').style.display = 'none';
+        document.getElementById('darklink').style.display = 'block';
+        document.getElementById('lightlink').style.display = 'none';
       } else if (!dark) {
         preference !== "light" ? localStorage.setItem('theme', 'light') : localStorage.removeItem('theme');
         document.documentElement.classList.remove('dark');
-        document.getElementById('dark').style.display = 'none';
-        document.getElementById('light').style.display = 'block';
+        document.getElementById('darklink').style.display = 'none';
+        document.getElementById('lightlink').style.display = 'block';
       }
     };
     const preference = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -38,10 +42,10 @@
       setDarkMode(true, preference);
     }
     window.onload = function () {
-      document.getElementById('dark').addEventListener('click', function() {
+      document.getElementById('darklink').addEventListener('click', function() {
         setDarkMode(!document.documentElement.classList.contains('dark'), preference);
       });
-      document.getElementById('light').addEventListener('click', function() {
+      document.getElementById('lightlink').addEventListener('click', function() {
         setDarkMode(!document.documentElement.classList.contains('dark'), preference);
       });
     };
