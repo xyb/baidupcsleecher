@@ -76,14 +76,14 @@
 
         <!-- status of every steps -->
         <div class="flex items-right">
-          <svg class="h-6 w-6 {{ task.transfer_completed_at | yesno:" text-green-500 dark:text-green-800, text-stone-400 dark:text-stone-600" }} inline"
+          <svg class="h-6 w-6 {{ task.transfer_completed_at | yesno:' text-green-500 dark:text-green-800, text-stone-400 dark:text-stone-600' }} inline"
                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                stroke-linejoin="round">
             <circle cx="5.5" cy="11.5" r="4.5" />
             <circle cx="18.5" cy="11.5" r="4.5" />
             <line x1="5.5" y1="16" x2="18.5" y2="16" />
           </svg>
-          <svg class="h-6 w-6 {{ task.sample_downloaded_at | yesno:" text-green-500 dark:text-green-800, text-stone-400 dark:text-stone-600" }} inline" width="24"
+          <svg class="h-6 w-6 {{ task.sample_downloaded_at | yesno:' text-green-500 dark:text-green-800, text-stone-400 dark:text-stone-600' }} inline" width="24"
                height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
                stroke-linejoin="round">
             <path stroke="none" d="M0 0h24v24H0z" />
@@ -94,7 +94,7 @@
             <line x1="9" y1="16" x2="9.01" y2="16" />
             <line x1="13" y1="16" x2="15" y2="16" />
           </svg>
-          <svg class="h-6 w-6 {{ task.full_downloaded_at | yesno:" text-green-500 dark:text-green-800, text-stone-400 dark:text-stone-600" }} inline" width="24"
+          <svg class="h-6 w-6 {{ task.full_downloaded_at | yesno:' text-green-500 dark:text-green-800, text-stone-400 dark:text-stone-600' }} inline" width="24"
                height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
                stroke-linejoin="round">
             <path stroke="none" d="M0 0h24v24H0z" />
@@ -118,7 +118,7 @@
 <div class="pagination py-6 px-4 text-center sm:p-6 md:py-10 md:px-8">
   <div class="inline-flex items-center justify-center gap-3">
     {% if page.has_previous %}
-      <a href="?per_page={{ per_page }}&page=1"
+      <a href="?per_page={{ page.paginator.per_page }}&page=1"
          class="inline-flex h-8 w-8 items-center justify-center rounded border border-gray-100 dark:border-gray-800 bg-white dark:bg-black text-gray-900 dark:text-gray-200 rtl:rotate-180">
         <span class="sr-only">First Page</span>
         <svg class="h-6 w-6 text-gray-500" width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
@@ -128,7 +128,7 @@
           <polyline points="17 7 12 12 17 17" />
         </svg>
       </a>
-      <a href="?per_page={{ per_page }}&page={{ page.previous_page_number }}"
+      <a href="?per_page={{ page.paginator.per_page }}&page={{ page.previous_page_number }}"
          class="inline-flex h-8 w-8 items-center justify-center rounded border border-gray-100 dark:border-gray-800 bg-white dark:bg-black text-gray-900 dark:text-gray-200 rtl:rotate-180">
         <span class="sr-only">Prev Page</span>
         <svg class="h-6 w-6 text-gray-500" width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
@@ -144,7 +144,7 @@
     </p>
 
     {% if page.has_next %}
-      <a href="?per_page={{ per_page }}&page={{ page.next_page_number }}"
+      <a href="?per_page={{ page.paginator.per_page }}&page={{ page.next_page_number }}"
          class="inline-flex h-8 w-8 items-center justify-center rounded border border-gray-100 dark:border-gray-800 bg-white dark:bg-black text-gray-900 dark:text-gray-200 rtl:rotate-180">
         <span class="sr-only">Next Page</span>
         <svg class="h-6 w-6 text-gray-500" width="24" height="24" viewBox="0 0 24 24" stroke-width="2"
@@ -153,7 +153,7 @@
           <polyline points="9 6 15 12 9 18" />
         </svg>
       </a>
-      <a href="?per_page={{ per_page }}&page={{ page.paginator.num_pages }}"
+      <a href="?per_page={{ page.paginator.per_page }}&page={{ page.paginator.num_pages }}"
          class="inline-flex h-8 w-8 items-center justify-center rounded border border-gray-100 dark:border-gray-800 bg-white dark:bg-black text-gray-900 dark:text-gray-200 rtl:rotate-180">
         <span class="sr-only">Last Page</span>
         <svg class="h-6 w-6 text-gray-500" width="24" height="24" viewBox="0 0 24 24" stroke-width="2"

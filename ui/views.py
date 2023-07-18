@@ -14,11 +14,11 @@ def index(request):
 
 def task_list(request):
     tasks = Task.objects.all().order_by("-id")
-    page_number = request.GET.get("page", 1)
-    per_page = request.GET.get("per_page", 10)
+    page_number = int(request.GET.get("page") or 1)
+    per_page = int(request.GET.get("per_page") or 10)
     paginator = Paginator(tasks, per_page=per_page)
     page = paginator.get_page(page_number)
-    return render(request, "ui/task_list.html", {"page": page, "per_page": per_page})
+    return render(request, "ui/task_list.html", {"page": page})
 
 
 def add_task(request):
