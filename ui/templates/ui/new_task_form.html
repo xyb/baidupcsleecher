@@ -1,4 +1,4 @@
-<form action="new" method="post" class="modal-box w-full max-w-xxs">
+<form action="new" method="post" hx-post="new" hx-on::before-request="document.querySelector('#new_task').checked = false" class="modal-box w-full max-w-xxs">
   {% csrf_token %}
   {{ form.non_field_errors }}
   <h-1>New Task</h1>
@@ -26,7 +26,7 @@
     {{ form.full_download_now.errors }}
   </div>
   <div class="modal-action">
-            <!-- if there is a button in form, it will close the modal -->
+    <!-- if there is a button in form, it will close the modal -->
     <button type="submit" class="btn btn-primary">Submit</button>
   </div>
 </form>
