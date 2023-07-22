@@ -1,0 +1,32 @@
+<form action="new" method="post" hx-post="new" hx-on::before-request="document.querySelector('#new_task').checked = false" class="modal-box w-full max-w-xxs">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  <h-1>New Task</h1>
+  <div class="form-control">
+    <label class="label">
+      <span class="label-text">Shared Link</span>
+    </label>
+    <input name="shared_link" type="text" placeholder="Link with or without password"
+           class="input input-bordered w-full max-w-xxs" />
+    {{ form.shared_link.errors }}
+  </div>
+  <div class="form-control">
+    <label class="label">
+      <span class="label-text">Shared Password</span>
+    </label>
+    <input name="shared_password" type="text" placeholder="Password if not included in the link"
+           class="input input-bordered w-full max-w-xxs" />
+    {{ form.shared_password.errors }}
+  </div>
+  <div class="form-control">
+    <label class="label cursor-pointer w-full max-w-xxs">
+      <span class="label-text">Fully download immediately</span>
+      <input name="full_download_now" type="checkbox" checked="checked" class="checkbox" />
+    </label>
+    {{ form.full_download_now.errors }}
+  </div>
+  <div class="modal-action">
+    <!-- if there is a button in form, it will close the modal -->
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </div>
+</form>

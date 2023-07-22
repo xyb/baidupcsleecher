@@ -58,3 +58,21 @@ class TaskUITestCase(TestCase):
         self.assertTrue(b"Prev Page" in response.content)
         self.assertTrue(b"First Page" in response.content)
         self.assertTrue(b"2 / 2 Pages" in response.content)
+
+    def test_new_task(self):
+        response = self.client.get(reverse("index"))
+        assert b"hello" not in response.content
+        assert b"wrld" not in response.content
+
+        response = self.client.post(
+            reverse("new_task"),
+            {
+                "shared_link": "https://pan.baidu.com/s/hello",
+                "shared_password": "wrld",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        response = self.client.get(reverse("index"))
+        assert b"hello" in response.content
+        assert b"wrld" in response.content

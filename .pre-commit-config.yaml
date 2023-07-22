@@ -38,7 +38,9 @@ repos:
       - id: djhtml
         entry: djhtml --tabwidth 2
       - id: djcss
+        exclude: static/.*
       - id: djjs
+        exclude: static/.*
 
   - repo: https://github.com/asottile/pyupgrade
     rev: v3.2.0

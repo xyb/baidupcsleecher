@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Baidu Cloud Storage Leecher{% endblock %}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha384-zMEydMdp5mC+i11DwQRMHxzvFhmCbjZtR+KrIUQRc1uJJCq7NTXDSHVLozUvqPEB" crossorigin="anonymous">
+    <script src="https://cdn.tailwindcss.com"></script>
+    {% load static %}
+    <script src="{% static 'js/htmx/htmx.min.js' %}" defer></script>
+    <script src="{% static 'js/htmx/debug.js' %}" defer></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.3.1/dist/full.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
   </head>
 
   <body class="bg-gray-100 dark:bg-black dark:text-gray-500">
@@ -18,8 +24,11 @@
     </footer>
   </body>
 
-  <script src="https://cdn.tailwindcss.com"></script>
   <script>
+    document.body.addEventListener('htmx:configRequest', (event) => {
+      event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}'; //insert csrf token when performing AJAX request
+    })
+
     tailwind.config = {
       darkMode: 'class',
     }
