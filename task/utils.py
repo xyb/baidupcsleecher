@@ -55,7 +55,7 @@ def parse_shared_link(url: str) -> str:
     >>> parse_shared_link('https://test.com/xyb')
     Traceback (most recent call last):
       ...
-    ValueError: The shared url is not a valid url. https://test.com/xyb
+    ValueError: The shared url is invalid: https://test.com/xyb
     """
 
     pwd = get_url_query(url, "pwd") or ""
@@ -72,7 +72,7 @@ def parse_shared_link(url: str) -> str:
     if m:
         return dict(id="1" + m.group(1), password=pwd)
 
-    raise ValueError(f"The shared url is not a valid url. {url}")
+    raise ValueError(f"The shared url is invalid: {url}")
 
 
 def unify_shared_link(url):

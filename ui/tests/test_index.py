@@ -60,6 +60,7 @@ class TaskUITestCase(TestCase):
         self.assertTrue(b"2 / 2 Pages" in response.content)
 
     def test_new_task(self):
+        assert len(Task.objects.all()) == 2
         response = self.client.get(reverse("index"))
         assert b"hello" not in response.content
         assert b"wrld" not in response.content
@@ -73,6 +74,7 @@ class TaskUITestCase(TestCase):
         )
 
         self.assertEqual(response.status_code, 302)
+        assert len(Task.objects.all()) == 3
         response = self.client.get(reverse("index"))
         assert b"hello" in response.content
         assert b"wrld" in response.content

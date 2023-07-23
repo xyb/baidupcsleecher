@@ -4,10 +4,10 @@ from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
+from django.views.decorators.http import require_POST
 
-from .forms import TaskForm
+from .forms import NewTaskForm
 from task.models import Task
-from task.utils import parse_shared_link
 
 
 def get_task_list_page(request):
@@ -21,7 +21,7 @@ def get_task_list_page(request):
 
 def index(request):
     page = get_task_list_page(request)
-    return render(request, "ui/index.html", {"page": page})
+    return render(request, "ui/index.html", {"page": page, "form": NewTaskForm()})
 
 
 def task_list(request):
@@ -29,30 +29,26 @@ def task_list(request):
     return render(request, "ui/task_list.html", {"page": page})
 
 
+@require_POST
 def new_task(request):
-    form = TaskForm()
-    if request.method == "POST":
-        form = TaskForm(request.POST)
-        if form.is_valid():
-            task = form.save()
-            link = parse_shared_link(task.shared_link)
-            task.shared_id = link["id"]
-            if not task.shared_password and link["password"]:
-                task.shared_password = link["password"]
-            task.save()
+    form = NewTaskForm(request.POST)
+    if not form.is_valid():
+        # return render(request, "ui/new_task_form.html", {"form": form})
+        return HttpResponse(status=422, content=form.errors.as_json())
 
-            if request.htmx:
-                return HttpResponse(
-                    status=204,
-                    headers={
-                        "HX-Trigger": json.dumps(
-                            {
-                                "taskListChanged": None,
-                                "showMessage": f"{task.id} added.",
-                            },
-                        ),
-                    },
-                )
-            else:
-                return HttpResponseRedirect("/ui/")
-    return render(request, "ui/new_task_form.html", {"form": form})
+    task = form.save()
+
+    if not request.htmx:
+        return HttpResponseRedirect("/ui/")
+
+    return HttpResponse(
+        status=204,
+        headers={
+            "HX-Trigger": json.dumps(
+                {
+                    "taskListChanged": None,
+                    "showMessage": f"{task.id} added.",
+                },
+            ),
+        },
+    )
