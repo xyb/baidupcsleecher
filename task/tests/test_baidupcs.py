@@ -143,6 +143,36 @@ class TestSaveShared(unittest.TestCase):
         self.client.api.exists.assert_called_with(remotedir)
         self.client.api.transfer_shared_paths.assert_called()
 
+    def test_save_shared_expired(self):
+        shared_url = "https://pan.baidu.com/s/expired"
+        self.client.api.exists.return_value = False
+        self.client.api.makedir.return_value = None
+        self.client.api.shared_paths.side_effect = BaiduPCSError(
+            "error_code: 117, message: {'csrf': '', ... 'expiredType': -1, ... }",
+            117,
+        )
+
+        with pytest.raises(BaiduPCSError) as exc:
+            save_shared(self.client, shared_url, "/dir", "psw")
+
+        assert "error_code: 117" in str(exc)
+        assert "message: 该分享已过期" in str(exc)
+
+    def test_token_leaked(self):
+        shared_url = "https://pan.baidu.com/s/failed"
+        self.client.api.exists.return_value = False
+        self.client.api.makedir.return_value = None
+        self.client.api.shared_paths.side_effect = BaiduPCSError(
+            "error_code: 0, message: {'csrf': '', 'XDUSS': ... }",
+            117,
+        )
+
+        with pytest.raises(BaiduPCSError) as exc:
+            save_shared(self.client, shared_url, "/dir", "psw")
+
+        assert "csrf" not in str(exc)
+        assert "XDUSS" not in str(exc)
+
     def test_need_captcah(self):
         shared_url = "https://pan.baidu.com/s/1test"
         password = "pwd"
