@@ -346,6 +346,8 @@ class Task(models.Model):
             or "message: 该分享已删除或已取消" in e
             or "error_code: -12," in e
             or "message: 访问密码错误" in e
+            or "error_code: 117," in e
+            or "message: 该分享已过期" in e
         ):
             return False
 

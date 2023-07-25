@@ -164,7 +164,19 @@ def save_shared(
             captcha_code,
         )
 
-    shared_paths = deque(client.api.shared_paths(shared_url))
+    try:
+        shared_paths = deque(client.api.shared_paths(shared_url))
+    except Exception as e:
+        error = str(e)
+        if "error_code: 117," in error and "'expiredType': -1," in error:
+            i = error.find(" 117,")
+            friendly_message = error[:i] + " 117, message: 该分享已过期"
+            raise BaiduPCSError(friendly_message)
+        if "message: {'csrf':" in error:
+            i = error.find("{'csrf'")
+            sensitive_info_removed = error[:i] + "...}"
+            raise BaiduPCSError(sensitive_info_removed)
+        raise e
 
     # Record the remotedir of each shared_path
     _remotedirs = {}
