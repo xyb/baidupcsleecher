@@ -1,5 +1,6 @@
 <form action="new" method="post"
-      hx-post="new" hx-on::before-request="document.querySelector('#new_task').checked = false"
+      hx-post="new"
+      hx-on::before-request="document.querySelector('#new_task').checked = false"
       hx-target-4*="#errors"
       class="modal-box w-full max-w-xxs">
   {% csrf_token %}

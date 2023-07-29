@@ -33,8 +33,13 @@ def task_list(request):
 def new_task(request):
     form = NewTaskForm(request.POST)
     if not form.is_valid():
-        # return render(request, "ui/new_task_form.html", {"form": form})
-        return HttpResponse(status=422, content=form.errors.as_json())
+        if request.htmx:
+            return HttpResponse(
+                status=422,
+                content=render(request, "ui/new_task_errors.html", {"form": form}),
+            )
+        else:
+            return render(request, "ui/new_task_form.html", {"form": form})
 
     task = form.save()
 
@@ -52,3 +57,7 @@ def new_task(request):
             ),
         },
     )
+
+
+def nothing(request):
+    return HttpResponse()
