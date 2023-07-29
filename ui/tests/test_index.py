@@ -37,6 +37,22 @@ class TaskUITestCase(BaseTestCase):
         self.assertTrue(b"bee" in response.content)
         self.assertTrue(b"Next Page" not in response.content)
 
+    def test_list_failed_task(self):
+        response = self.client.get(reverse("index"))
+        assert b"bg-red" not in response.content
+        task = Task.objects.get(id=1)
+        task.transfer_completed_at = task.created_at
+        task.sample_downloaded_at = task.created_at
+        task.full_downloaded_at = None
+        task.status = task.Status.FINISHED
+        task.failed = True
+        task.save()
+
+        response = self.client.get(reverse("index"))
+
+        assert response.status_code == 200
+        assert b"bg-red" in response.content
+
     def test_next_page(self):
         url = reverse("index")
 
@@ -136,3 +152,40 @@ class HTMXTestCase(BaseTestCase):
         self.assertTrue(b"Prev Page" in response.content)
         self.assertTrue(b"First Page" in response.content)
         self.assertTrue(b"2 / 2 Pages" in response.content)
+
+    def test_new_task(self):
+        assert len(Task.objects.all()) == 2
+        response = self.client.get(reverse("index"))
+        assert b"hello" not in response.content
+        assert b"wrld" not in response.content
+
+        response = self.client.post(
+            reverse("new_task"),
+            {
+                "shared_link": "https://pan.baidu.com/s/hello",
+                "shared_password": "wrld",
+            },
+            headers={"HX-Request": "true"},
+        )
+
+        assert "HX-Trigger" in response.headers
+        assert "taskListChanged" in response.headers["HX-Trigger"]
+        assert response.status_code == 204
+        assert len(Task.objects.all()) == 3
+        response = self.client.get(reverse("index"))
+        assert b"hello" in response.content
+        assert b"wrld" in response.content
+
+    def test_new_task_failed(self):
+        response = self.client.post(
+            reverse("new_task"),
+            data={
+                "shared_link": "wrongurl",
+            },
+            headers={"HX-Request": "true"},
+        )
+
+        assert response.status_code == 422
+        assert len(Task.objects.all()) == 2
+        response = self.client.get(reverse("index"))
+        assert b"wrongurl" not in response.content
