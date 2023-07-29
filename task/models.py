@@ -19,9 +19,17 @@ class Task(models.Model):
         SAMPLING_DOWNLOADED = "SampleDLed"
         FINISHED = "Finished"
 
-    shared_id = models.CharField(max_length=50, default="", editable=False)
-    shared_link = models.CharField(max_length=100)
-    shared_password = models.CharField(max_length=4, blank=True, null=True)
+    shared_id = models.CharField(max_length=50, default="", blank=True)
+    shared_link = models.CharField(
+        max_length=100,
+        help_text="Link, with or without password",
+    )
+    shared_password = models.CharField(
+        max_length=4,
+        blank=True,
+        null=True,
+        help_text="Password, if not included in the shared link",
+    )
     status = models.CharField(
         max_length=12,
         editable=False,

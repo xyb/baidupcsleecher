@@ -1,0 +1,26 @@
+<div class="toast toast-top toast-center"
+     hx-get="{% url 'nothing' %}"
+     hx-trigger="load delay:5s"
+     hx-swap="outerHTML"
+>
+  {% if form.non_field_errors %}
+    <div class="alert alert-error">
+      {{ form.non_field_errors }}
+    </div>
+  {% endif %}
+  {% for error in form.shared_link.errors %}
+    <div class="alert alert-error">
+      {{ error|escape }}
+    </div>
+  {% endfor %}
+  {% for error in form.shared_password.errors %}
+    <div class="alert alert-error">
+      {{ error|escape }}
+    </div>
+  {% endfor %}
+  {% for error in form.full_download_now.errors %}
+    <div class="alert alert-error">
+      {{ error|escape }}
+    </div>
+  {% endfor %}
+</div>
