@@ -132,6 +132,9 @@ class BaiduPCSClient:
 
         self.download_dir(remote_dir, local_dir, sample_size=sample_size)
 
+    def delete(self, remote_dir):
+        self.api.remove(remote_dir)
+
 
 def remotepath_exists(api, name: str, rd: str, _cache={}) -> bool:
     names = _cache.get(rd)

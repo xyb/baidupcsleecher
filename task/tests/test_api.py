@@ -15,31 +15,30 @@ class TaskViewSetTestCase(APITestCase):
         self.task = Task.objects.create(
             shared_link="https://pan.baidu.com/s/123abc?pwd=def",
         )
-        self.task.set_files(
-            [
-                {
-                    "path": "张楚",
-                    "is_dir": True,
-                    "is_file": False,
-                    "size": 0,
-                    "md5": None,
-                },
-                {
-                    "path": "张楚/孤独的人是可耻的.mp3",
-                    "is_dir": False,
-                    "is_file": True,
-                    "size": 9518361,
-                    "md5": "6d5bea8001e9db88f8cd8145aaf8cce4",
-                },
-                {
-                    "path": "张楚/蚂蚁蚂蚁.mp3",
-                    "is_dir": False,
-                    "is_file": True,
-                    "size": 1234567,
-                    "md5": "1eec826501e9db88f8cd8145aaf8cce4",
-                },
-            ],
-        )
+        self.remote_files = [
+            {
+                "path": "张楚",
+                "is_dir": True,
+                "is_file": False,
+                "size": 0,
+                "md5": None,
+            },
+            {
+                "path": "张楚/孤独的人是可耻的.mp3",
+                "is_dir": False,
+                "is_file": True,
+                "size": 9518361,
+                "md5": "6d5bea8001e9db88f8cd8145aaf8cce4",
+            },
+            {
+                "path": "张楚/蚂蚁蚂蚁.mp3",
+                "is_dir": False,
+                "is_file": True,
+                "size": 1234567,
+                "md5": "1eec826501e9db88f8cd8145aaf8cce4",
+            },
+        ]
+        self.task.set_files(self.remote_files)
         self.task.save()
 
     def test_create_task(self):
@@ -216,7 +215,47 @@ class TaskViewSetTestCase(APITestCase):
         assert task.message == ""
 
     def test_files(self):
+        response = self.client.get(
+            reverse("task-files", args=[self.task.id]),
+            {},
+            format="json",
+        )
+
+        assert response.json() == self.remote_files
         assert self.task.total_files == 2
         assert self.task.total_size == 10752928
         assert self.task.largest_file == "张楚/孤独的人是可耻的.mp3"
         assert self.task.largest_file_size == 9518361
+
+    def test_local_files(self):
+        response = self.client.get(
+            reverse("task-local-files", args=[self.task.id]),
+            {},
+            format="json",
+        )
+
+        assert response.json() == []
+
+    @patch("task.views.get_baidupcs_client")
+    def test_delete_remote_files(self, mock_get_baidupcs_client):
+        mock_get_baidupcs_client.return_value = Mock()
+
+        id = self.task.id
+        response = self.client.delete(reverse("task-files", args=[id]))
+
+        assert response.json() == {str(id): "remote files deleted"}
+
+    def test_delete_local_files(self):
+        id = self.task.id
+        response = self.client.delete(reverse("task-local-files", args=[id]))
+
+        assert response.json() == {str(id): "local files deleted"}
+
+    @patch("task.views.get_baidupcs_client")
+    def test_erase(self, mock_get_baidupcs_client):
+        mock_get_baidupcs_client.return_value = Mock()
+
+        id = self.task.id
+        response = self.client.delete(reverse("task-erase", args=[id]))
+
+        assert response.json() == {str(id): "task deleted"}

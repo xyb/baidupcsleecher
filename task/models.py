@@ -1,7 +1,9 @@
+import shutil
 from json import dumps
 from json import loads
 from os import makedirs
 from os import walk
+from os.path import exists
 from os.path import getsize
 from os.path import join
 from pathlib import Path
@@ -361,3 +363,13 @@ class Task(models.Model):
 
         # assume task is not recoverable by default to avoid flood requests
         return False
+
+    def delete_files(self):
+        if exists(self.sample_path):
+            shutil.rmtree(self.sample_path)
+        if exists(self.data_path):
+            shutil.rmtree(self.data_path)
+
+    def erase(self):
+        self.delete_files()
+        self.delete()
