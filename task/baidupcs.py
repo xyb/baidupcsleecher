@@ -3,9 +3,11 @@ from collections import deque
 from os import makedirs
 from os.path import basename
 from os.path import getsize
+from os.path import split
 from pathlib import Path
 from pathlib import PurePosixPath
 from time import sleep
+from typing import Callable
 
 from baidupcs_py.baidupcs import BaiduPCSApi
 from baidupcs_py.baidupcs import BaiduPCSError
@@ -26,7 +28,7 @@ class CaptchaRequired(ValueError):
     pass
 
 
-def get_baidupcs_client():
+def get_baidupcs_client() -> "BaiduPCSClient":
     return BaiduPCSClient(
         settings.PAN_BAIDU_BDUSS,
         cookies2dict(settings.PAN_BAIDU_COOKIES),
@@ -132,11 +134,19 @@ class BaiduPCSClient:
 
         self.download_dir(remote_dir, local_dir, sample_size=sample_size)
 
+    def exists(self, remote_dir):
+        if remote_dir.endswith("/"):
+            remote_dir = remote_dir[:-1]
+        if not remote_dir:  # should be "/"
+            return True
+        root, name = split(remote_dir)
+        return remotepath_exists(self.api, name, root)
+
     def delete(self, remote_dir):
         self.api.remove(remote_dir)
 
 
-def remotepath_exists(api, name: str, rd: str, _cache={}) -> bool:
+def remotepath_exists(api: "BaiduPCSApi", name: str, rd: str, _cache={}) -> bool:
     names = _cache.get(rd)
     if not names:
         names = {PurePosixPath(sp.path).name for sp in api.list(rd)}
@@ -145,14 +155,14 @@ def remotepath_exists(api, name: str, rd: str, _cache={}) -> bool:
 
 
 def save_shared(
-    client,
-    shared_url,
-    remotedir,
-    password=None,
-    callback_save_captcha=None,
+    client: "BaiduPCSClient",
+    shared_url: str,
+    remotedir: str,
+    password: str = None,
+    callback_save_captcha: Callable[[str, str, bytes], None] = None,
     captcha_id: str = "",
     captcha_code: str = "",
-):
+) -> None:
     assert remotedir.startswith("/"), "`remotedir` must be an absolute path"
 
     shared_url = unify_shared_link(shared_url)
@@ -263,12 +273,12 @@ def save_shared(
 
 
 def list_all_sub_paths(
-    api,
+    api: "BaiduPCSApi",
     sharedpath: str,
     uk: int,
     share_id: int,
     bdstoken: str,
-):
+) -> list[dict]:
     sub_paths = []
     page = 1
     size = 100
@@ -289,13 +299,13 @@ def list_all_sub_paths(
 
 
 def access_shared(
-    client,
+    client: BaiduPCSClient,
     shared_url: str,
     password: str,
-    callback_save_captcha=None,
+    callback_save_captcha: Callable[[str, str, bytes], None] = None,
     captcha_id: str = "",
     captcha_code: str = "",
-):
+) -> None:
     try:
         client.api._baidupcs.access_shared(
             shared_url,

@@ -24,18 +24,18 @@ logger = logging.getLogger(__name__)
 def delete_remote_files(
     task_id,
     remote_path,
-    success_message,
     catch_error=True,
 ):
     try:
         client = get_baidupcs_client()
-        client.delete(remote_path)
+        if client.exists(remote_path):
+            client.delete(remote_path)
     except Exception as exc:
         if catch_error:
             return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
         else:
             raise exc
-    return Response({task_id: success_message})
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TaskViewSet(
@@ -50,6 +50,9 @@ class TaskViewSet(
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_fields = ("shared_link", "shared_id", "status", "failed")
 
+    def list(self, request):
+        return super().list(request)
+
     @action(methods=["get", "delete"], detail=True, name="Remote Files")
     def files(self, request, pk=None):
         task = self.get_object()
@@ -59,7 +62,6 @@ class TaskViewSet(
             return delete_remote_files(
                 task.id,
                 task.remote_path,
-                "remote files deleted",
             )
 
     @action(methods=["get", "delete"], detail=True, name="Local Files")
@@ -69,7 +71,7 @@ class TaskViewSet(
             return Response(task.list_local_files())
         if request.method == "DELETE":
             task.delete_files()
-            return Response({task.id: "local files deleted"})
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, name="Captch Image")
     def captcha(self, request, pk=None):
@@ -132,16 +134,14 @@ class TaskViewSet(
         task = self.get_object()
         task_id = task.id
         task.erase()
-        message = "task deleted"
         try:
             return delete_remote_files(
                 task_id,
                 task.remote_path,
-                message,
                 catch_error=False,
             )
-        except BaiduPCSError:
-            return Response({task_id: message})
+        except BaiduPCSError as exc:
+            return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
     def get_serializer(self, *args, **kwargs):
         if self.action == "captcha_code":

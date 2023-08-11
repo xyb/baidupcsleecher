@@ -2,7 +2,8 @@ Django>=4.2
 djangorestframework
 django-cors-headers
 django-filter
-djangorestframework-link-header-pagination
+drf-link-header-pagination
+drf-spectacular[sidecar]
 whitenoise
 django-htmx
 BaiduPCS-Py
