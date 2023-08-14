@@ -137,7 +137,7 @@ class Task(models.Model):
     def load_files(self) -> List[dict]:
         return loads(self.files or "[]") or []
 
-    def list_remote_files(self, files_only: bool = True) -> [dict]:
+    def list_remote_files(self, files_only: bool = True) -> List[dict]:
         if not self.files:
             return []
         files = loads(self.files)
@@ -149,7 +149,7 @@ class Task(models.Model):
     def remote_files(self) -> List[dict]:
         return self.list_remote_files(files_only=True)
 
-    def list_local_files(self) -> [dict]:
+    def list_local_files(self) -> List[dict]:
         data_path = self.data_path
         for root, dirs, files in walk(data_path):
             for file in files:
@@ -193,24 +193,24 @@ class Task(models.Model):
             return size
 
     @classmethod
-    def filter_ready_to_transfer(cls):
+    def filter_ready_to_transfer(cls) -> List["Task"]:
         inited = Q(status=cls.Status.INITED)
         tasks = cls.objects.filter(inited)
         return tasks
 
     @classmethod
-    def filter_transferd(cls):
+    def filter_transferd(cls) -> List["Task"]:
         return cls.objects.filter(status=cls.Status.TRANSFERRED)
 
     @classmethod
-    def filter_sampling_downloaded(cls):
+    def filter_sampling_downloaded(cls) -> List["Task"]:
         return cls.objects.filter(
             status=cls.Status.SAMPLING_DOWNLOADED,
             full_download_now=True,
         )
 
     @classmethod
-    def filter_failed(cls):
+    def filter_failed(cls) -> List["Task"]:
         return cls.objects.filter(failed=True)
 
     @property
@@ -231,7 +231,7 @@ class Task(models.Model):
         self.inc_retry_times()
         self.save()
 
-    def get_steps(self) -> tuple:
+    def get_steps(self) -> tuple[str, str]:
         found_current = False
         status = self.Status
         if not self.failed:

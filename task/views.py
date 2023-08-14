@@ -1,14 +1,20 @@
 import logging
 from io import BytesIO
+from typing import Any
 
 from baidupcs_py.baidupcs import BaiduPCSError
+from django.http import HttpRequest
 from django.http import HttpResponse
 from django_filters import rest_framework as filters
+from drf_spectacular.utils import extend_schema
 from rest_framework import mixins
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.decorators import action
+from rest_framework.decorators import renderer_classes
+from rest_framework.renderers import BaseRenderer
 from rest_framework.response import Response
+from rest_framework.serializers import Serializer
 
 from .baidupcs import get_baidupcs_client
 from .leecher import transfer
@@ -21,11 +27,20 @@ from .serializers import TaskSerializer
 logger = logging.getLogger(__name__)
 
 
+class JPEGRenderer(BaseRenderer):
+    media_type = "image/jpeg"
+    format = "jpg"
+    charset = None
+    render_style = "binary"
+
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        return data
+
+
 def delete_remote_files(
-    task_id,
-    remote_path,
-    catch_error=True,
-):
+    remote_path: str,
+    catch_error: bool = True,
+) -> HttpResponse:
     try:
         client = get_baidupcs_client()
         if client.exists(remote_path):
@@ -50,22 +65,16 @@ class TaskViewSet(
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_fields = ("shared_link", "shared_id", "status", "failed")
 
-    def list(self, request):
-        return super().list(request)
-
     @action(methods=["get", "delete"], detail=True, name="Remote Files")
-    def files(self, request, pk=None):
+    def files(self, request: HttpRequest, pk: int = None) -> HttpResponse:
         task = self.get_object()
         if request.method == "GET":
             return Response(task.load_files())
         if request.method == "DELETE":
-            return delete_remote_files(
-                task.id,
-                task.remote_path,
-            )
+            return delete_remote_files(task.remote_path)
 
     @action(methods=["get", "delete"], detail=True, name="Local Files")
-    def local_files(self, request, pk=None):
+    def local_files(self, request: HttpRequest, pk: int = None) -> HttpResponse:
         task = self.get_object()
         if request.method == "GET":
             return Response(task.list_local_files())
@@ -73,13 +82,15 @@ class TaskViewSet(
             task.delete_files()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
+    @extend_schema(responses={200: bytes, 404: None})
     @action(detail=True, name="Captch Image")
-    def captcha(self, request, pk=None):
+    @renderer_classes([JPEGRenderer])
+    def captcha(self, request: HttpRequest, pk: int = None) -> HttpResponse:
         task = self.get_object()
-        return HttpResponse(BytesIO(task.captcha), content_type="image/jpeg")
+        return HttpResponse(BytesIO(task.captcha), content_type=JPEGRenderer.media_type)
 
     @action(methods=["post"], detail=True, name="Input Captcha Code")
-    def captcha_code(self, request, pk=None):
+    def captcha_code(self, request: HttpRequest, pk: int = None) -> HttpResponse:
         serializer = CaptchaCodeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -103,7 +114,7 @@ class TaskViewSet(
         return Response(TaskSerializer(task).data)
 
     @action(methods=["post"], detail=True, name="Approve to download whole files")
-    def full_download_now(self, request, pk=None):
+    def full_download_now(self, request: HttpRequest, pk: int = None) -> HttpResponse:
         serializer = FullDownloadNowSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         task = self.get_object()
@@ -112,38 +123,33 @@ class TaskViewSet(
         return Response(TaskSerializer(task).data)
 
     @action(methods=["post"], detail=True, name="Restart task to downloading files")
-    def restart_downloading(self, request, pk=None):
+    def restart_downloading(self, request: HttpRequest, pk: int = None) -> HttpResponse:
         task = self.get_object()
         task.restart_downloading()
         return Response({"status": task.status})
 
     @action(methods=["post"], detail=True, name="Restart task from inited status")
-    def restart(self, request, pk=None):
+    def restart(self, request: HttpRequest, pk: int = None) -> HttpResponse:
         task = self.get_object()
         task.restart()
         return Response({"status": task.status})
 
     @action(methods=["post"], detail=True, name="Resume failed task")
-    def resume(self, request, pk=None):
+    def resume(self, request: HttpRequest, pk: int = None) -> HttpResponse:
         task = self.get_object()
         task.schedule_resume()
         return Response({"status": task.status})
 
     @action(methods=["delete"], detail=True, name="Erase task, remote and local files")
-    def erase(self, request, pk=None):
+    def erase(self, request: HttpRequest, pk: int = None) -> HttpResponse:
         task = self.get_object()
-        task_id = task.id
         task.erase()
         try:
-            return delete_remote_files(
-                task_id,
-                task.remote_path,
-                catch_error=False,
-            )
+            return delete_remote_files(task.remote_path, catch_error=False)
         except BaiduPCSError as exc:
             return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
-    def get_serializer(self, *args, **kwargs):
+    def get_serializer(self, *args: Any, **kwargs: Any) -> Serializer:
         if self.action == "captcha_code":
             return CaptchaCodeSerializer(*args, **kwargs)
         if self.action == "full_download_now":
