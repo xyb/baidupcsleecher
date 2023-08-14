@@ -66,6 +66,15 @@ class TaskViewSet(
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_fields = ("shared_link", "shared_id", "status", "failed")
 
+    @extend_schema(
+        description="Remove remote files",
+        responses={204: None, 404: None},
+        methods=["DELETE"],
+    )
+    @extend_schema(
+        description="List remote files",
+        methods=["GET"],
+    )
     @action(methods=["get", "delete"], detail=True, name="Remote Files")
     def files(self, request: HttpRequest, pk: int = None) -> HttpResponse:
         task = self.get_object()
