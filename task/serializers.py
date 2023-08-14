@@ -60,5 +60,9 @@ class FullDownloadNowSerializer(serializers.Serializer):
     full_download_now = serializers.BooleanField()
 
 
+class ErrorSerializer(serializers.Serializer):
+    error = serializers.CharField()
+
+
 class OperationSerializer(serializers.Serializer):
     pass

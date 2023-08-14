@@ -20,6 +20,7 @@ from .baidupcs import get_baidupcs_client
 from .leecher import transfer
 from .models import Task
 from .serializers import CaptchaCodeSerializer
+from .serializers import ErrorSerializer
 from .serializers import FullDownloadNowSerializer
 from .serializers import OperationSerializer
 from .serializers import TaskSerializer
@@ -89,6 +90,7 @@ class TaskViewSet(
         task = self.get_object()
         return HttpResponse(BytesIO(task.captcha), content_type=JPEGRenderer.media_type)
 
+    @extend_schema(responses={200: TaskSerializer, 400: ErrorSerializer, 404: None})
     @action(methods=["post"], detail=True, name="Input Captcha Code")
     def captcha_code(self, request: HttpRequest, pk: int = None) -> HttpResponse:
         serializer = CaptchaCodeSerializer(data=request.data)
@@ -140,6 +142,7 @@ class TaskViewSet(
         task.schedule_resume()
         return Response({"status": task.status})
 
+    @extend_schema(responses={204: None, 400: ErrorSerializer, 404: None})
     @action(methods=["delete"], detail=True, name="Erase task, remote and local files")
     def erase(self, request: HttpRequest, pk: int = None) -> HttpResponse:
         task = self.get_object()
