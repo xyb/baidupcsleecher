@@ -7,6 +7,7 @@ from os.path import exists
 from os.path import getsize
 from os.path import join
 from pathlib import Path
+from typing import List
 
 from django.conf import settings
 from django.db import models
@@ -133,7 +134,7 @@ class Task(models.Model):
             file_list.append(file)
         self.files = dumps(file_list)
 
-    def load_files(self) -> [dict]:
+    def load_files(self) -> List[dict]:
         return loads(self.files or "[]") or []
 
     def list_remote_files(self, files_only: bool = True) -> [dict]:
@@ -145,7 +146,7 @@ class Task(models.Model):
         return files
 
     @property
-    def remote_files(self) -> [dict]:
+    def remote_files(self) -> List[dict]:
         return self.list_remote_files(files_only=True)
 
     def list_local_files(self) -> [dict]:
@@ -157,7 +158,7 @@ class Task(models.Model):
                 yield {"file": sub_path, "size": getsize(filepath)}
 
     @property
-    def local_files(self) -> [dict]:
+    def local_files(self) -> List[dict]:
         return list(self.list_local_files())
 
     @property

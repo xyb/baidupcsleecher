@@ -8,6 +8,7 @@ from pathlib import Path
 from pathlib import PurePosixPath
 from time import sleep
 from typing import Callable
+from typing import List
 
 from baidupcs_py.baidupcs import BaiduPCSApi
 from baidupcs_py.baidupcs import BaiduPCSError
@@ -278,7 +279,7 @@ def list_all_sub_paths(
     uk: int,
     share_id: int,
     bdstoken: str,
-) -> list[dict]:
+) -> List[dict]:
     sub_paths = []
     page = 1
     size = 100
