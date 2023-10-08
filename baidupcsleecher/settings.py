@@ -67,6 +67,8 @@ RETRY_TIMES_LIMIT = int(getenv("RETRY_TIMES_LIMIT", 5))
 TRANSFER_POLICY = getenv("TRANSFER_POLICY", "if_not_present")
 PAN_BAIDU_BDUSS = getenv("PAN_BAIDU_BDUSS", "")
 PAN_BAIDU_COOKIES = getenv("PAN_BAIDU_COOKIES", "")
+# do not download these path
+IGNORE_PATH_RE = getenv("IGNORE_PATH_RE", ".*__MACOSX.*|.*spam.*")
 
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "drf_link_header_pagination.LinkHeaderPagination",

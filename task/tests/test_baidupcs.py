@@ -23,6 +23,7 @@ def test_get_baidupcs_client(mock_cookies2dict, mock_settings, mock_BaiduPCS):
     mock_settings.PAN_BAIDU_BDUSS = "test_bduss"
     mock_settings.PAN_BAIDU_COOKIES = "test_cookies"
     mock_cookies2dict.return_value = {"test_cookies"}
+    mock_settings.IGNORE_PATH_RE = ".*__MACOSX.*|.*spam.*"
 
     get_baidupcs_client()
 
@@ -229,3 +230,31 @@ class DownloadTest(unittest.TestCase):
         assert mock_download.called
         assert mock_download.call_count == 1
         assert mock_download.call_args.args[0].name == "text.txt"
+
+    @patch(
+        "task.baidupcs.BaiduPCSClient.list_files",
+        return_value=[
+            {
+                "path": "file.txt",
+                "is_dir": False,
+                "is_file": True,
+                "size": 2,
+                "md5": "abcd",
+            },
+            {
+                "path": "__MACOSX/text.txt",
+                "is_dir": False,
+                "is_file": True,
+                "size": 1024,
+                "md5": "badbeef",
+            },
+        ],
+    )
+    @patch("task.baidupcs.download_url", return_value=100)
+    def test_ignore_download(self, mock_download, mock_list):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            self.client.download_dir("/", tmpdir, 100)
+
+        assert mock_download.called
+        assert mock_download.call_count == 1
+        assert mock_download.call_args.args[0].name == "file.txt"

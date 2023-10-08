@@ -199,6 +199,8 @@ TRANSFER_POLICY = "if_not_present"
 # For PAN_BAIDU_BDUSS and PAN_BAIDU_COOKIES, please check the documentation of BaiduPCS-Py
 PAN_BAIDU_BDUSS = ""
 PAN_BAIDU_COOKIES = ""
+# do not download file if path matches these regex
+IGNORE_PATH_RE = ".*__MACOSX.*|.*spam.*"
 
 ## django settings
 # 0: production, 1: development

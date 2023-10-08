@@ -14,6 +14,7 @@ from django.conf import settings
 
 from .utils import cookies2dict
 from .utils import download_url
+from .utils import match_regex
 from .utils import unify_shared_link
 
 logger = logging.getLogger("baibupcs")
@@ -101,6 +102,9 @@ class BaiduPCSClient:
     def download_file(self, remote_path, local_dir, file_size, sample_size=0):
         local_path = Path(local_dir) / basename(remote_path)
         logger.info(f"  {remote_path} -> {local_path}")
+        if match_regex(str(remote_path), settings.IGNORE_PATH_RE):
+            logger.info(f"  {remote_path} matched ignore paths, skipping")
+            return
 
         if not local_path.parent.exists():
             local_path.parent.mkdir(parents=True)
