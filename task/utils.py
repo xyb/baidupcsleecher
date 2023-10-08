@@ -91,3 +91,24 @@ def download_url(local_path, url, headers, limit=0):
             if limit > 0 and total >= limit:
                 return total
     return total
+
+
+def match_regex(string: str, regex: str) -> bool:
+    """
+    Check if a string matches a given regular expression.
+
+    Args:
+        string (str): The input string.
+        regex (str): The regular expression pattern.
+
+    Returns:
+        bool: True if the string matches the regular expression, False otherwise.
+
+    Examples:
+        >>> match_regex("hello.txt", ".*txt|.*mp3")
+        True
+        >>> match_regex("hello.html", ".*txt|.*mp3")
+        False
+    """
+    pattern = re.compile(regex)
+    return bool(re.match(pattern, string))
