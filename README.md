@@ -218,4 +218,6 @@ DB_USER = 'postgres'
 DB_PASSWORD = ''
 DB_HOST = ''
 DB_PORT = ''
+# prefix of url to access static files
+DJANGO_STATIC_URL = 'static/'
 ```
