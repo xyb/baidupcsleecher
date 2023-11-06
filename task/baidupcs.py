@@ -3,9 +3,13 @@ from collections import deque
 from os import makedirs
 from os.path import basename
 from os.path import getsize
+from os.path import split
 from pathlib import Path
 from pathlib import PurePosixPath
 from time import sleep
+from typing import Callable
+from typing import Dict
+from typing import List
 
 from baidupcs_py.baidupcs import BaiduPCSApi
 from baidupcs_py.baidupcs import BaiduPCSError
@@ -27,7 +31,7 @@ class CaptchaRequired(ValueError):
     pass
 
 
-def get_baidupcs_client():
+def get_baidupcs_client() -> "BaiduPCSClient":
     return BaiduPCSClient(
         settings.PAN_BAIDU_BDUSS,
         cookies2dict(settings.PAN_BAIDU_COOKIES),
@@ -35,12 +39,17 @@ def get_baidupcs_client():
 
 
 class BaiduPCSClient:
-    def __init__(self, bduss, cookies, api=None):
+    def __init__(self, bduss: str, cookies: Dict[str, str], api: "BaiduPCSApi" = None):
         self.bduss = bduss
         self.cookies = cookies
         self.api = api if api else BaiduPCSApi(bduss=bduss, cookies=cookies)
 
-    def list_files(self, remote_dir, retry=3, fail_silent=False):
+    def list_files(
+        self,
+        remote_dir: str,
+        retry: int = 3,
+        fail_silent: bool = False,
+    ) -> List[dict]:
         while True:
             try:
                 files = self.api.list(remote_dir, recursive=True)
@@ -72,13 +81,13 @@ class BaiduPCSClient:
 
     def save_shared_link(
         self,
-        remote_dir,
-        link,
-        password=None,
-        callback_save_captcha=None,
+        remote_dir: str,
+        link: str,
+        password: str = None,
+        callback_save_captcha: Callable[[str, str, bytes], None] = None,
         captcha_id: str = "",
         captcha_code: str = "",
-    ):
+    ) -> None:
         save_shared(
             self,
             link,
@@ -89,7 +98,7 @@ class BaiduPCSClient:
             captcha_code=captcha_code,
         )
 
-    def download_dir(self, remote_dir, local_dir, sample_size=0):
+    def download_dir(self, remote_dir: str, local_dir: str, sample_size: int = 0):
         for file in self.list_files(remote_dir):
             if not file["is_file"]:
                 continue
@@ -99,7 +108,13 @@ class BaiduPCSClient:
             file_size = file["size"]
             self.download_file(remote_path, local_dir_, file_size, sample_size)
 
-    def download_file(self, remote_path, local_dir, file_size, sample_size=0):
+    def download_file(
+        self,
+        remote_path: str,
+        local_dir: str,
+        file_size: str,
+        sample_size: int = 0,
+    ) -> int:
         local_path = Path(local_dir) / basename(remote_path)
         logger.info(f"  {remote_path} -> {local_path}")
         if match_regex(str(remote_path), settings.IGNORE_PATH_RE):
@@ -114,12 +129,12 @@ class BaiduPCSClient:
                 not sample_size and file_size == getsize(local_path)
             ):
                 logger.info(f"{local_path} is ready existed.")
-                return
+                return 0
 
         url = self.api.download_link(remote_path)
         if not url:
             logger.info(remote_path)
-            return
+            return 0
 
         headers = {
             "Cookie": f"BDUSS={self.cookies['BDUSS']};",
@@ -130,17 +145,25 @@ class BaiduPCSClient:
         total = download_url(local_path, url, headers, limit=sample_size)
         return total
 
-    def leech(self, remote_dir, local_dir, sample_size=0):
+    def leech(self, remote_dir: str, local_dir: str, sample_size=0) -> None:
         if not local_dir.exists():
             makedirs(local_dir, exist_ok=True)
 
         self.download_dir(remote_dir, local_dir, sample_size=sample_size)
 
-    def delete(self, remote_dir):
+    def exists(self, remote_dir: str) -> bool:
+        if remote_dir.endswith("/"):
+            remote_dir = remote_dir[:-1]
+        if not remote_dir:  # should be "/"
+            return True
+        root, name = split(remote_dir)
+        return remotepath_exists(self.api, name, root)
+
+    def delete(self, remote_dir: str) -> None:
         self.api.remove(remote_dir)
 
 
-def remotepath_exists(api, name: str, rd: str, _cache={}) -> bool:
+def remotepath_exists(api: "BaiduPCSApi", name: str, rd: str, _cache={}) -> bool:
     names = _cache.get(rd)
     if not names:
         names = {PurePosixPath(sp.path).name for sp in api.list(rd)}
@@ -149,14 +172,14 @@ def remotepath_exists(api, name: str, rd: str, _cache={}) -> bool:
 
 
 def save_shared(
-    client,
-    shared_url,
-    remotedir,
-    password=None,
-    callback_save_captcha=None,
+    client: "BaiduPCSClient",
+    shared_url: str,
+    remotedir: str,
+    password: str = None,
+    callback_save_captcha: Callable[[str, str, bytes], None] = None,
     captcha_id: str = "",
     captcha_code: str = "",
-):
+) -> None:
     assert remotedir.startswith("/"), "`remotedir` must be an absolute path"
 
     shared_url = unify_shared_link(shared_url)
@@ -267,12 +290,12 @@ def save_shared(
 
 
 def list_all_sub_paths(
-    api,
+    api: "BaiduPCSApi",
     sharedpath: str,
     uk: int,
     share_id: int,
     bdstoken: str,
-):
+) -> List[dict]:
     sub_paths = []
     page = 1
     size = 100
@@ -293,13 +316,13 @@ def list_all_sub_paths(
 
 
 def access_shared(
-    client,
+    client: BaiduPCSClient,
     shared_url: str,
     password: str,
-    callback_save_captcha=None,
+    callback_save_captcha: Callable[[str, str, bytes], None] = None,
     captcha_id: str = "",
     captcha_code: str = "",
-):
+) -> None:
     try:
         client.api._baidupcs.access_shared(
             shared_url,

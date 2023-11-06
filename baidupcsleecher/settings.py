@@ -49,6 +49,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django_filters",
     "rest_framework",
+    "drf_spectacular",
+    "drf_spectacular_sidecar",
     "django_htmx",
     "task",
     "ui",
@@ -73,6 +75,17 @@ IGNORE_PATH_RE = getenv("IGNORE_PATH_RE", ".*__MACOSX.*|.*spam.*")
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "drf_link_header_pagination.LinkHeaderPagination",
     "PAGE_SIZE": int(getenv("API_PAGE_SIZE", "20")),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "BaiduPCS Leecher API",
+    "DESCRIPTION": "Save, download and manage BaiduPCS files",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SWAGGER_UI_DIST": "SIDECAR",
+    "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
+    "REDOC_DIST": "SIDECAR",
 }
 
 MIDDLEWARE = [

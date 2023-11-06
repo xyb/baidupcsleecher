@@ -243,13 +243,13 @@ class TaskViewSetTestCase(APITestCase):
         id = self.task.id
         response = self.client.delete(reverse("task-files", args=[id]))
 
-        assert response.json() == {str(id): "remote files deleted"}
+        assert response.status_code == status.HTTP_204_NO_CONTENT
 
     def test_delete_local_files(self):
         id = self.task.id
         response = self.client.delete(reverse("task-local-files", args=[id]))
 
-        assert response.json() == {str(id): "local files deleted"}
+        assert response.status_code == status.HTTP_204_NO_CONTENT
 
     @patch("task.views.get_baidupcs_client")
     def test_erase(self, mock_get_baidupcs_client):
@@ -258,4 +258,4 @@ class TaskViewSetTestCase(APITestCase):
         id = self.task.id
         response = self.client.delete(reverse("task-erase", args=[id]))
 
-        assert response.json() == {str(id): "task deleted"}
+        assert response.status_code == status.HTTP_204_NO_CONTENT
