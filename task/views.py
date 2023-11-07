@@ -2,6 +2,7 @@ import logging
 from io import BytesIO
 
 from baidupcs_py.baidupcs import BaiduPCSError
+from django.conf import settings
 from django.http import HttpResponse
 from django_filters import rest_framework as filters
 from rest_framework import mixins
@@ -13,9 +14,11 @@ from rest_framework.response import Response
 from .baidupcs import get_baidupcs_client
 from .leecher import transfer
 from .models import Task
+from .purge import purge
 from .serializers import CaptchaCodeSerializer
 from .serializers import FullDownloadNowSerializer
 from .serializers import OperationSerializer
+from .serializers import PurgeSerializer
 from .serializers import TaskSerializer
 
 logger = logging.getLogger(__name__)
@@ -143,11 +146,28 @@ class TaskViewSet(
         except BaiduPCSError:
             return Response({task_id: message})
 
-    def get_serializer(self, *args, **kwargs):
-        if self.action == "captcha_code":
-            return CaptchaCodeSerializer(*args, **kwargs)
-        if self.action == "full_download_now":
-            return FullDownloadNowSerializer(*args, **kwargs)
-        if self.action in ["restart", "restart_downloading", "resume", "erase"]:
-            return OperationSerializer(*args, **kwargs)
-        return super().get_serializer(*args, **kwargs)
+    @action(
+        methods=["post"],
+        detail=False,
+        name="Clearing local files of deleted tasks",
+    )
+    def purge(self, request):
+        serializer = self.get_serializer_class()(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        if serializer.validated_data["move_to_trash"]:
+            purge(settings.DATA_DIR / "baidupcsleecher_trash")
+        else:
+            purge()
+        return Response({"done": True})
+
+    def get_serializer_class(self):
+        serializer_classes = {
+            "captcha_code": CaptchaCodeSerializer,
+            "full_download_now": FullDownloadNowSerializer,
+            "purge": PurgeSerializer,
+            "restart": OperationSerializer,
+            "restart_downloading": OperationSerializer,
+            "resume": OperationSerializer,
+            "erase": OperationSerializer,
+        }
+        return serializer_classes.get(self.action, self.serializer_class)

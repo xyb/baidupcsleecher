@@ -98,30 +98,34 @@ class Task(models.Model):
     def __repr__(self):
         return f"<Task id={self.id}, {self.shared_id} with {self.total_files} files>"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return repr(self)
 
     @property
-    def path(self):
+    def path(self) -> str:
         return f"{self.shared_id}.{self.shared_password}"
 
     @property
-    def sample_path(self):
+    def sample_path(self) -> str:
         return f"{self.path}.sample"
 
     @property
-    def data_path(self):
+    def data_path(self) -> Path:
         return settings.DATA_DIR / self.path
 
-    def ensure_data_path(self):
+    @property
+    def sample_data_path(self) -> Path:
+        return settings.DATA_DIR / self.sample_path
+
+    def ensure_data_path(self) -> None:
         if not self.data_path.exists():
             makedirs(self.data_path, exists_ok=True)
 
     @property
-    def remote_path(self):
+    def remote_path(self) -> str:
         return str(Path(settings.REMOTE_LEECHER_DIR) / self.path)
 
-    def set_files(self, files):
+    def set_files(self, files) -> None:
         remote_base_dir = str(Path(settings.REMOTE_LEECHER_DIR) / self.path)
         file_list = []
         for file in files:

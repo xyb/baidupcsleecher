@@ -1,7 +1,11 @@
 import logging
+import os
 import re
 import traceback
 from http.cookies import SimpleCookie
+from pathlib import Path
+from typing import List
+from typing import Tuple
 from urllib.parse import parse_qs
 from urllib.parse import urlparse
 
@@ -112,3 +116,101 @@ def match_regex(string: str, regex: str) -> bool:
     """
     pattern = re.compile(regex)
     return bool(re.match(pattern, string))
+
+
+def walk_dir(path: Path) -> List[Tuple[Path, List[os.DirEntry]]]:
+    """
+    Recursively walks through a directory and yields tuples containing
+    the current path and a list of directory entries.
+
+    Args:
+        path (Path): The path to the directory.
+
+    Returns:
+        List[Tuple[Path, List[os.DirEntry]]]: A list of tuples containing
+        the current path and a list of directory entries.
+
+    Examples:
+        >>> import tempfile
+        >>> with tempfile.TemporaryDirectory() as temp_dir:
+        ...     test_dir = Path(temp_dir) / "test_dir"
+        ...     test_dir.mkdir()
+        ...     file1 = test_dir / "file1.txt"
+        ...     file1.touch()
+        ...     sub_dir = test_dir / "sub_dir"
+        ...     sub_dir.mkdir()
+        ...     file2 = sub_dir / "file2.txt"
+        ...     file2.touch()
+        ...     entries = list(walk_dir(test_dir))
+        ...     len(entries)
+        2
+        >>> entries[0][0] == test_dir
+        True
+        >>> sorted([i.name for i in entries[0][1]])
+        ['file1.txt', 'sub_dir']
+        >>> entries[1][0] == sub_dir
+        True
+        >>> sorted([i.name for i in entries[1][1]])
+        ['file2.txt']
+    """
+
+    paths = [path]
+    while paths:
+        path = paths.pop(0)
+        with os.scandir(path) as scandir_it:
+            entries = list(scandir_it)
+        yield path, entries
+        for entry in entries:
+            if entry.is_dir():
+                paths.append(path._make_child_relpath(entry.name))
+
+
+def walk_files(path: Path) -> List[Path]:
+    """
+    >>> import tempfile
+    >>> with tempfile.TemporaryDirectory() as temp_dir:
+    ...     test_dir = Path(temp_dir) / "test_dir"
+    ...     test_dir.mkdir()
+    ...     file1 = test_dir / "file1.txt"
+    ...     file1.touch()
+    ...     sub_dir = test_dir / "sub_dir"
+    ...     sub_dir.mkdir()
+    ...     file2 = sub_dir / "file2.txt"
+    ...     file2.touch()
+    ...     files = list(walk_files(test_dir))
+    ...     len(files)
+    2
+    >>> [i.name for i in files]
+    ['file1.txt', 'file2.txt']
+    """
+    for root, entries in walk_dir(path):
+        for p in entries:
+            if not p.is_dir():
+                yield root / p
+
+
+def list_files(root: Path, without_root=True) -> List[str]:
+    """
+    >>> import tempfile
+    >>> with tempfile.TemporaryDirectory() as temp_dir:
+    ...     test_dir = Path(temp_dir) / "test_dir"
+    ...     test_dir.mkdir()
+    ...     file1 = test_dir / "file1.txt"
+    ...     file1.touch()
+    ...     sub_dir = test_dir / "sub_dir"
+    ...     sub_dir.mkdir()
+    ...     file2 = sub_dir / "file2.txt"
+    ...     file2.touch()
+    ...     files = list_files(test_dir)
+    ...     len(files)
+    2
+    >>> files
+    ['file1.txt', 'sub_dir/file2.txt']
+    """
+    result = []
+    for file_path in walk_files(root):
+        if without_root:
+            result.append(str(file_path.relative_to(root)))
+        else:
+            result.append(str(file_path))
+    return result
