@@ -173,6 +173,17 @@ $ curl -X POST localhost:8000/task/${task_id}/restart_downloading/
 ```
 This simply restarts the download process for samples and full files, but skips the steps of saving and retrieving the file list.
 
+### purge files of deleted leecher tasks
+
+After a long run, there will be a large number of files of deleted leecher tasks. You may want to delete files that you no longer need, you can call the purge api to delete them:
+```sh
+$ curl -X POST localhost:8000/task/purge/
+```
+By default, deleted files are moved to the trash folder: `baidupcsleecher_trash`, you have to delete them manually. If you want to delete the file completely, set the parameter `move_to_trash=false`:
+```sh
+$ curl -X POST -d "move_to_trash=false" localhost:8000/task/purge/
+```
+
 ## simple ui
 You can also directly use the browser to access the simple web interface that comes with the service, submit download tasks, and view the task list.
 

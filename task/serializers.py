@@ -60,5 +60,9 @@ class FullDownloadNowSerializer(serializers.Serializer):
     full_download_now = serializers.BooleanField()
 
 
+class PurgeSerializer(serializers.Serializer):
+    move_to_trash = serializers.BooleanField(default=True)
+
+
 class OperationSerializer(serializers.Serializer):
     pass

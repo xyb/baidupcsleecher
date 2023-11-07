@@ -57,7 +57,7 @@ if DEBUG:
     INSTALLED_APPS.append("django_browser_reload")
 
 # baidupcsleecher settings
-DATA_DIR = Path(getenv("DATA_DIR", "/tmp")).resolve()
+DATA_DIR = Path(getenv("DATA_DIR", "/tmp/baidupcsleecher")).resolve()
 REMOTE_LEECHER_DIR = str(Path(getenv("REMOTE_LEECHER_DIR", "/leecher")).resolve())
 RUNNER_SLEEP_SECONDS = int(getenv("RUNNER_SLEEP_SECONDS", "5"))
 SAMPLE_SIZE = int(getenv("SAMPLE_SIZE", "10240"))
