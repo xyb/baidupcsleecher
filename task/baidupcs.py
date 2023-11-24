@@ -110,8 +110,8 @@ class BaiduPCSClient:
             local_path.parent.mkdir(parents=True)
 
         if local_path.exists():
-            if (sample_size and sample_size == getsize(local_path)) or (
-                not sample_size and file_size == getsize(local_path)
+            if (sample_size and sample_size <= getsize(local_path)) or (
+                not sample_size and file_size <= getsize(local_path)
             ):
                 logger.info(f"{local_path} is ready existed.")
                 return
