@@ -286,14 +286,17 @@ class Task(models.Model):
                 return name
 
     @property
-    def current_step(self):
+    def current_progressing_stage(self) -> str:
         return self.get_current_step()
 
     @property
-    def is_downloading(self):
-        return self.current_step == "downloading_files"
+    def is_downloading(self) -> bool:
+        return self.current_progressing_stage in [
+            "downloading_files",
+            "downloading_samplings",
+        ]
 
-    def get_resume_method_name(self):
+    def get_resume_method_name(self) -> str:
         resume_methods = {
             "waiting_assign": "restart",
             "transferring": "restart",
@@ -304,11 +307,11 @@ class Task(models.Model):
         if step_name:
             return resume_methods[step_name]
 
-    def inc_retry_times(self):
+    def inc_retry_times(self) -> None:
         self.retry_times += 1
         self.save()
 
-    def schedule_resume(self):
+    def schedule_resume(self) -> None:
         if not self.failed:
             return
         method_name = self.get_resume_method_name()
@@ -317,12 +320,12 @@ class Task(models.Model):
             method()
 
     @classmethod
-    def schedule_resume_failed(cls):
+    def schedule_resume_failed(cls) -> None:
         for task in cls.filter_failed():
             task.schedule_resume()
 
     @property
-    def done(self):
+    def done(self) -> bool:
         if self.failed:
             return False
         if not self.full_downloaded_at:
@@ -332,7 +335,7 @@ class Task(models.Model):
         return True
 
     @property
-    def recoverable(self):
+    def recoverable(self) -> bool:
         if not self.failed:
             return False
 

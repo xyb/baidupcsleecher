@@ -55,6 +55,8 @@ The creation API will return the task object:
   "total_size": 0,
   "largest_file": null,
   "largest_file_size": null,
+  "is_downloading": False,
+  "current_progessing_stage": "waiting_assign",
   "done": false,
   "failed": false,
   "recoverable": false,

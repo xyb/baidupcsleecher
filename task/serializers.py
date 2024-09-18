@@ -29,6 +29,8 @@ class TaskSerializer(serializers.HyperlinkedModelSerializer):
             "total_size",
             "largest_file",
             "largest_file_size",
+            "is_downloading",
+            "current_progressing_stage",
             "done",
             "failed",
             "recoverable",
