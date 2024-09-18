@@ -68,7 +68,42 @@ class TaskViewSetTestCase(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Task.objects.count(), 2)
-        assert response.json()["full_download_now"] is False
+        data = response.json()
+        assert data["full_download_now"] is False
+        assert data["current_progressing_stage"] == "waiting_assign"
+        assert data["is_downloading"] is False
+        assert set(data.keys()) == {
+            "callback",
+            "captcha_required",
+            "captcha_url",
+            "captcha",
+            "created_at",
+            "current_progressing_stage",
+            "done",
+            "failed",
+            "file_listed_at",
+            "finished_at",
+            "full_download_now",
+            "full_downloaded_at",
+            "id",
+            "is_downloading",
+            "largest_file_size",
+            "largest_file",
+            "message",
+            "path",
+            "recoverable",
+            "retry_times",
+            "sample_downloaded_at",
+            "sample_path",
+            "shared_id",
+            "shared_link",
+            "shared_password",
+            "started_at",
+            "status",
+            "total_files",
+            "total_size",
+            "transfer_completed_at",
+        }
 
     def test_create_task_full_download_now(self):
         url = reverse("task-list")
