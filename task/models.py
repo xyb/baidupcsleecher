@@ -152,8 +152,11 @@ class Task(models.Model):
     def remote_files(self):
         return self.list_remote_files(files_only=True)
 
-    def list_local_files(self):
-        data_path = self.data_path
+    def list_local_files(self, samples_only=False):
+        if samples_only:
+            data_path = self.sample_data_path
+        else:
+            data_path = self.data_path
         for root, dirs, files in walk(data_path):
             for file in files:
                 filepath = join(root, file)
@@ -163,6 +166,10 @@ class Task(models.Model):
     @property
     def local_files(self):
         return list(self.list_local_files())
+
+    @property
+    def local_sample_files(self) -> list:
+        return list(self.list_local_files(samples_only=True))
 
     @property
     def total_files(self):
@@ -380,3 +387,23 @@ class Task(models.Model):
     def erase(self):
         self.delete_files()
         self.delete()
+
+    @property
+    def sample_downloaded_files(self) -> int:
+        return len(list(self.list_local_files()))
+
+    @property
+    def sample_download_percent(self) -> float:
+        if self.total_files == 0:
+            return 0.0
+        return 100.0 * self.sample_downloaded_files / self.total_files
+
+    @property
+    def downloaded_size(self) -> int:
+        return self.local_size
+
+    @property
+    def download_percent(self) -> float:
+        if self.total_files == 0:
+            return 0.0
+        return 100.0 * self.downloaded_size / self.total_size
