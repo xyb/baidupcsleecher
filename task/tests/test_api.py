@@ -15,7 +15,7 @@ from ..utils import list_files
 
 def touch_file(path: Path):
     path.parent.mkdir(parents=True, exist_ok=True)
-    open(path, "w").write("")
+    open(path, "w").write("hello" * 1024)
 
 
 def touch_task_files(task: Task):
@@ -72,6 +72,10 @@ class TaskViewSetTestCase(APITestCase):
         assert data["full_download_now"] is False
         assert data["current_progressing_stage"] == "waiting_assign"
         assert data["is_downloading"] is False
+        assert data["download_percent"] == 0
+        assert data["sample_download_percent"] == 0
+        assert data["downloaded_size"] == 0
+        assert data["sample_downloaded_files"] == 0
         assert set(data.keys()) == {
             "callback",
             "captcha_required",
@@ -80,6 +84,8 @@ class TaskViewSetTestCase(APITestCase):
             "created_at",
             "current_progressing_stage",
             "done",
+            "download_percent",
+            "downloaded_size",
             "failed",
             "file_listed_at",
             "finished_at",
@@ -93,7 +99,9 @@ class TaskViewSetTestCase(APITestCase):
             "path",
             "recoverable",
             "retry_times",
+            "sample_download_percent",
             "sample_downloaded_at",
+            "sample_downloaded_files",
             "sample_path",
             "shared_id",
             "shared_link",
@@ -365,3 +373,16 @@ class TaskViewSetTestCase(APITestCase):
 
         assert response.json() == {"done": True}
         assert sorted(list_files(settings.DATA_DIR)) == files
+
+    def test_download_percent(self):
+        touch_task_files(self.task)
+
+        url = reverse("task-detail", args=[self.task.id])
+
+        response = self.client.get(url)
+
+        data = response.json()
+        assert f'{data["download_percent"]:0.3f}' == "0.095"
+        assert f'{data["sample_download_percent"]:0.2f}' == "100.00"
+        assert data["downloaded_size"] == 10240
+        assert data["sample_downloaded_files"] == 2
