@@ -177,7 +177,7 @@ Or you can call:
 ```sh
 $ curl -X POST localhost:8000/task/${task_id}/restart_downloading/
 ```
-This simply restarts the download process for samples and full files, but skips the steps of saving and retrieving the file list.
+This simply restarts the download process for samples and full files, but skips the stages of saving and retrieving the file list.
 
 ### purge files of deleted leecher tasks
 

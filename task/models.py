@@ -243,7 +243,7 @@ class Task(models.Model):
     def restart_downloading(self) -> Status:
         return self._reset_status(self.Status.TRANSFERRED)
 
-    def get_steps(self) -> Generator[tuple[str, str], None, None]:
+    def get_stages(self) -> Generator[tuple[str, str], None, None]:
         found_current = False
         status = self.Status
         if not self.failed:
@@ -305,14 +305,14 @@ class Task(models.Model):
                 else:
                     yield name, "todo"
 
-    def get_current_step(self):
-        for name, done in self.get_steps():
+    def get_current_stage(self):
+        for name, done in self.get_stages():
             if done in ["todo", "doing", "failed"]:
                 return name
 
     @property
     def current_progressing_stage(self) -> str:
-        return self.get_current_step()
+        return self.get_current_stage()
 
     @property
     def is_downloading(self) -> bool:
@@ -329,9 +329,9 @@ class Task(models.Model):
             "waiting_permit_download": None,
             "downloading_files": "restart_downloading",
         }
-        step_name = self.get_current_step()
-        if step_name:
-            return resume_methods[step_name]
+        stage_name = self.get_current_stage()
+        if stage_name:
+            return resume_methods[stage_name]
 
     def inc_retry_times(self) -> int:
         self.retry_times += 1
