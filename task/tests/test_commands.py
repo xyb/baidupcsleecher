@@ -163,7 +163,7 @@ class ResumeCommandTest(TestCase):
         ResumeCommand().resume_once()
 
         task = Task.objects.get(pk=self.task.id)
-        assert task.status == Task.Status.TRANSFERRED
+        assert task.status == Task.Status.SAMPLING_DOWNLOADED
         assert not task.failed
         assert task.retry_times == 1
 
@@ -181,6 +181,7 @@ class ResumeCommandTest(TestCase):
 
     def test_resume_too_many_times(self):
         self.task.retry_times = settings.RETRY_TIMES_LIMIT + 1
+        self.task.full_download_now = True
         self.task.save()
         assert self.task.retry_times == settings.RETRY_TIMES_LIMIT + 1
         assert self.task.get_resume_method_name() == "restart_downloading"
@@ -194,6 +195,8 @@ class ResumeCommandTest(TestCase):
         assert task.status == Task.Status.SAMPLING_DOWNLOADED
 
     def test_run_command(self):
+        self.task.full_download_now = True
+        self.task.save()
         assert self.task.retry_times == 0
 
         call_command("runresume", "--once")

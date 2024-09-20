@@ -11,7 +11,7 @@
         {% elif task.failed %}
           <div
             class="bg-red-200 dark:bg-red-600 text-teal-800 dark:text-teal-900 text-xs px-2 inline-block rounded-full uppercase font-semibold tracking-wide">
-            {{ task.current_step }}
+            {{ task.current_stage }}
           </div>
         {% else %}
           <div
@@ -74,7 +74,7 @@
           {% endif %}
         </div>
 
-        <!-- status of every steps -->
+        <!-- status of every stages -->
         <div class="flex items-right">
           <svg class="h-6 w-6 {{ task.transfer_completed_at | yesno:' text-green-500 dark:text-green-800, text-stone-400 dark:text-stone-600' }} inline"
                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"

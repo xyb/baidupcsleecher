@@ -4,6 +4,8 @@ import re
 import traceback
 from http.cookies import SimpleCookie
 from pathlib import Path
+from typing import Dict
+from typing import Generator
 from typing import List
 from typing import Tuple
 from urllib.parse import parse_qs
@@ -16,7 +18,7 @@ SHARED_URL_PREFIX = "https://pan.baidu.com/s/"
 logger = logging.getLogger(__name__)
 
 
-def handle_exception(task, exc):
+def handle_exception(exc: Exception) -> str:
     message = f"{exc}"
     logger.error(message)
     tb = traceback.format_exc()
@@ -24,7 +26,7 @@ def handle_exception(task, exc):
     return message
 
 
-def cookies2dict(cookie_string):
+def cookies2dict(cookie_string: str) -> Dict[str, str]:
     """
     >>> cookies2dict('name=xyb; project=leecher')
     {'name': 'xyb', 'project': 'leecher'}
@@ -36,7 +38,7 @@ def cookies2dict(cookie_string):
     return {k: v.value for k, v in cookie.items()}
 
 
-def get_url_query(url, query_name):
+def get_url_query(url: str, query_name: str) -> str:
     """
     >>> get_url_query('http://test.com/?abc=def', 'abc')
     'def'
@@ -79,12 +81,17 @@ def parse_shared_link(url: str) -> str:
     raise ValueError(f"The shared url is invalid: {url}")
 
 
-def unify_shared_link(url):
+def unify_shared_link(url: str) -> str:
     result = parse_shared_link(url)
     return SHARED_URL_PREFIX + result["id"]
 
 
-def download_url(local_path, url, headers, limit=0):
+def download_url(
+    local_path: str,
+    url: str,
+    headers: Dict[str, str],
+    limit: int = 0,
+) -> int:
     resp = requests.get(url, headers=headers, stream=True)
     total = 0
     with open(local_path, "wb") as f:
@@ -118,7 +125,7 @@ def match_regex(string: str, regex: str) -> bool:
     return bool(re.match(pattern, string))
 
 
-def walk_dir(path: Path) -> List[Tuple[Path, List[os.DirEntry]]]:
+def walk_dir(path: Path) -> Generator[Tuple[Path, List[os.DirEntry]], None, None]:
     """
     Recursively walks through a directory and yields tuples containing
     the current path and a list of directory entries.
@@ -165,7 +172,7 @@ def walk_dir(path: Path) -> List[Tuple[Path, List[os.DirEntry]]]:
                 paths.append(path._make_child_relpath(entry.name))
 
 
-def walk_files(path: Path) -> List[Path]:
+def walk_files(path: Path) -> Generator[Path, None, None]:
     """
     >>> import tempfile
     >>> with tempfile.TemporaryDirectory() as temp_dir:

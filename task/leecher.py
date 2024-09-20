@@ -3,6 +3,7 @@ import logging
 from django.conf import settings
 from django.utils import timezone
 
+from .baidupcs import BaiduPCSClient
 from .baidupcs import CaptchaRequired
 from .callback import callback
 from .models import Task
@@ -11,13 +12,13 @@ from .utils import handle_exception
 logger = logging.getLogger(__name__)
 
 
-def start_task(task):
+def start_task(task: Task) -> None:
     task.status = Task.Status.STARTED
     task.started_at = timezone.now()
     task.save()
 
 
-def save_link(client, task):
+def save_link(client: "BaiduPCSClient", task: Task) -> None:
     def save_captcha(captcha_id, captcha_img_url, content):
         task.captcha_required = True
         task.captcha = content
@@ -47,7 +48,7 @@ def save_link(client, task):
     callback(task, "link_saved")
 
 
-def set_files(client, task):
+def set_files(client: "BaiduPCSClient", task: Task) -> None:
     task.set_files(list(client.list_files(task.remote_path)))
     task.file_listed_at = timezone.now()
     task.save()
@@ -55,7 +56,7 @@ def set_files(client, task):
     callback(task, "files_ready")
 
 
-def download_samples(client, task):
+def download_samples(client: "BaiduPCSClient", task: Task) -> None:
     logger.info("downloading samples...")
     client.leech(
         remote_dir=task.remote_path,
@@ -68,7 +69,7 @@ def download_samples(client, task):
     callback(task, "sampling_downloaded")
 
 
-def download(client, task):
+def download(client: "BaiduPCSClient", task: Task) -> None:
     logger.info("downloading...")
     client.leech(
         remote_dir=task.remote_path,
@@ -80,7 +81,7 @@ def download(client, task):
     logger.info(f"leech {task} succeeded.")
 
 
-def task_failed(task, message):
+def task_failed(task: Task, message: str) -> None:
     task.status = Task.Status.FINISHED
     task.finished_at = timezone.now()
     task.failed = True
@@ -88,12 +89,12 @@ def task_failed(task, message):
     task.save()
 
 
-def finish_transfer(task):
+def finish_transfer(task: Task) -> None:
     task.status = Task.Status.TRANSFERRED
     task.save()
 
 
-def transfer(client, task):
+def transfer(client: "BaiduPCSClient", task: Task) -> None:
     logger.info(f"start transfer {task} ...")
     start_task(task)
 
@@ -106,41 +107,41 @@ def transfer(client, task):
         logging.info(f"captcha required: {task}")
     except Exception as e:
         logging.error(f"transfer {task} failed.")
-        task_failed(task, handle_exception(task, e))
+        task_failed(task, handle_exception(e))
 
 
-def finish_sampling(task):
+def finish_sampling(task: Task) -> None:
     task.status = Task.Status.SAMPLING_DOWNLOADED
     task.save()
 
 
-def sampling(client, task):
+def sampling(client: "BaiduPCSClient", task: Task) -> None:
     logger.info(f"start download sampling of {task}")
 
     try:
         download_samples(client, task)
     except Exception as e:
         logging.error(f"download sampling of {task} failed.")
-        task_failed(task, handle_exception(task, e))
+        task_failed(task, handle_exception(e))
 
     finish_sampling(task)
     logger.info(f"download sampling of {task} succeed.")
 
 
-def finish_task(task):
+def finish_task(task: Task) -> None:
     task.status = Task.Status.FINISHED
     task.finished_at = timezone.now()
     task.save()
 
 
-def leech(client, task):
+def leech(client: "BaiduPCSClient", task: Task) -> None:
     logger.info(f"start leech {task} to {task.data_path}")
 
     try:
         download(client, task)
     except Exception as e:
         logging.error(f"download all files of {task} failed.")
-        task_failed(task, handle_exception(task, e))
+        task_failed(task, handle_exception(e))
         return
 
     finish_task(task)
