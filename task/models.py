@@ -7,6 +7,7 @@ from os.path import exists
 from os.path import getsize
 from os.path import join
 from pathlib import Path
+from typing import Generator
 
 from django.conf import settings
 from django.db import models
@@ -227,21 +228,22 @@ class Task(models.Model):
     def is_waiting_for_captcha_code(self):
         return self.status == self.Status.STARTED and self.captcha_required
 
-    def restart(self):
-        self.status = self.Status.INITED
+    def _reset_status(self, status: Status = None) -> Status:
+        if status:
+            self.status = status
         self.failed = False
         self.message = ""
         self.inc_retry_times()
         self.save()
+        return self.status
 
-    def restart_downloading(self):
-        self.status = self.Status.TRANSFERRED
-        self.failed = False
-        self.message = ""
-        self.inc_retry_times()
-        self.save()
+    def restart(self) -> Status:
+        return self._reset_status(self.Status.INITED)
 
-    def get_steps(self):
+    def restart_downloading(self) -> Status:
+        return self._reset_status(self.Status.TRANSFERRED)
+
+    def get_steps(self) -> Generator[tuple[str, str], None, None]:
         found_current = False
         status = self.Status
         if not self.failed:
@@ -252,8 +254,16 @@ class Task(models.Model):
                     "downloading_samplings",
                     [status.TRANSFERRED, status.SAMPLING_DOWNLOADED],
                 ),
+                ("waiting_permit_download", [None, None]),
                 ("downloading_files", [status.SAMPLING_DOWNLOADED, status.FINISHED]),
             ]:
+                if name == "waiting_permit_download":
+                    if self.full_download_now:
+                        yield name, "done"
+                    else:
+                        yield name, "todo"
+                    continue
+
                 if self.status == start_status:
                     found_current = True
                     yield name, "doing"
@@ -272,6 +282,7 @@ class Task(models.Model):
                         self.sample_downloaded_at,
                     ],
                 ),
+                ("waiting_permit_download", [None, None]),
                 (
                     "downloading_files",
                     [
@@ -280,6 +291,13 @@ class Task(models.Model):
                     ],
                 ),
             ]:
+                if name == "waiting_permit_download":
+                    if self.full_download_now:
+                        yield name, "done"
+                    else:
+                        yield name, "todo"
+                    continue
+
                 if time_completed:
                     yield name, "done"
                 elif time_prev:
@@ -289,7 +307,7 @@ class Task(models.Model):
 
     def get_current_step(self):
         for name, done in self.get_steps():
-            if done in ["doing", "failed"]:
+            if done in ["todo", "doing", "failed"]:
                 return name
 
     @property
@@ -308,15 +326,17 @@ class Task(models.Model):
             "waiting_assign": "restart",
             "transferring": "restart",
             "downloading_samplings": "restart_downloading",
+            "waiting_permit_download": None,
             "downloading_files": "restart_downloading",
         }
         step_name = self.get_current_step()
         if step_name:
             return resume_methods[step_name]
 
-    def inc_retry_times(self) -> None:
+    def inc_retry_times(self) -> int:
         self.retry_times += 1
         self.save()
+        return self.retry_times
 
     def schedule_resume(self) -> None:
         if not self.failed:
@@ -325,6 +345,8 @@ class Task(models.Model):
         if method_name:
             method = getattr(self, method_name)
             method()
+        else:
+            self._reset_status()
 
     @classmethod
     def schedule_resume_failed(cls) -> None:

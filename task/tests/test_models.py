@@ -14,6 +14,7 @@ class TaskTestCase(TestCase):
             ("waiting_assign", "doing"),
             ("transferring", "todo"),
             ("downloading_samplings", "todo"),
+            ("waiting_permit_download", "todo"),
             ("downloading_files", "todo"),
         ]
         assert self.task.get_current_step() == "waiting_assign"
@@ -26,6 +27,7 @@ class TaskTestCase(TestCase):
             ("waiting_assign", "done"),
             ("transferring", "doing"),
             ("downloading_samplings", "todo"),
+            ("waiting_permit_download", "todo"),
             ("downloading_files", "todo"),
         ]
         assert self.task.get_current_step() == "transferring"
@@ -38,6 +40,7 @@ class TaskTestCase(TestCase):
             ("waiting_assign", "done"),
             ("transferring", "done"),
             ("downloading_samplings", "doing"),
+            ("waiting_permit_download", "todo"),
             ("downloading_files", "todo"),
         ]
         assert self.task.get_current_step() == "downloading_samplings"
@@ -45,11 +48,12 @@ class TaskTestCase(TestCase):
 
     def test_steps4(self):
         self.task.status = self.task.Status.SAMPLING_DOWNLOADED
-
+        self.task.full_download_now = True
         assert list(self.task.get_steps()) == [
             ("waiting_assign", "done"),
             ("transferring", "done"),
             ("downloading_samplings", "done"),
+            ("waiting_permit_download", "done"),
             ("downloading_files", "doing"),
         ]
         assert self.task.get_current_step() == "downloading_files"
@@ -58,11 +62,13 @@ class TaskTestCase(TestCase):
     def test_steps5(self):
         self.task.status = self.task.Status.FINISHED
         self.task.full_downloaded_at = self.task.created_at
+        self.task.full_download_now = True
 
         assert list(self.task.get_steps()) == [
             ("waiting_assign", "done"),
             ("transferring", "done"),
             ("downloading_samplings", "done"),
+            ("waiting_permit_download", "done"),
             ("downloading_files", "done"),
         ]
         assert self.task.get_current_step() is None
@@ -85,6 +91,7 @@ class TaskTestCase(TestCase):
             ("waiting_assign", "failed"),
             ("transferring", "todo"),
             ("downloading_samplings", "todo"),
+            ("waiting_permit_download", "todo"),
             ("downloading_files", "todo"),
         ]
         assert self.task.get_current_step() == "waiting_assign"
@@ -100,6 +107,7 @@ class TaskTestCase(TestCase):
             ("waiting_assign", "done"),
             ("transferring", "failed"),
             ("downloading_samplings", "todo"),
+            ("waiting_permit_download", "todo"),
             ("downloading_files", "todo"),
         ]
         assert self.task.get_current_step() == "transferring"
@@ -116,6 +124,7 @@ class TaskTestCase(TestCase):
             ("waiting_assign", "done"),
             ("transferring", "done"),
             ("downloading_samplings", "failed"),
+            ("waiting_permit_download", "todo"),
             ("downloading_files", "todo"),
         ]
         assert self.task.get_current_step() == "downloading_samplings"
@@ -127,12 +136,14 @@ class TaskTestCase(TestCase):
         self.task.started_at = self.task.created_at
         self.task.transfer_completed_at = self.task.created_at
         self.task.sample_downloaded_at = self.task.created_at
+        self.task.full_download_now = True
         self.task.failed = True
 
         assert list(self.task.get_steps()) == [
             ("waiting_assign", "done"),
             ("transferring", "done"),
             ("downloading_samplings", "done"),
+            ("waiting_permit_download", "done"),
             ("downloading_files", "failed"),
         ]
         assert self.task.get_current_step() == "downloading_files"
@@ -145,12 +156,14 @@ class TaskTestCase(TestCase):
         self.task.transfer_completed_at = self.task.created_at
         self.task.sample_downloaded_at = self.task.created_at
         self.task.full_downloaded_at = self.task.created_at
+        self.task.full_download_now = True
         self.task.failed = True
 
         assert list(self.task.get_steps()) == [
             ("waiting_assign", "done"),
             ("transferring", "done"),
             ("downloading_samplings", "done"),
+            ("waiting_permit_download", "done"),
             ("downloading_files", "done"),
         ]
         assert self.task.get_current_step() is None
@@ -180,6 +193,7 @@ class TaskTestCase(TestCase):
             ("waiting_assign", "doing"),
             ("transferring", "todo"),
             ("downloading_samplings", "todo"),
+            ("waiting_permit_download", "todo"),
             ("downloading_files", "todo"),
         ]
 
@@ -198,6 +212,7 @@ class TaskTestCase(TestCase):
             ("waiting_assign", "done"),
             ("transferring", "done"),
             ("downloading_samplings", "doing"),
+            ("waiting_permit_download", "todo"),
             ("downloading_files", "todo"),
         ]
 

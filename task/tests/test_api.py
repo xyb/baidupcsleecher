@@ -247,9 +247,9 @@ class TaskViewSetTestCase(APITestCase):
         response = self.client.post(url, data, format="json")
 
         assert response.status_code == status.HTTP_200_OK
-        assert response.json()["status"] == Task.Status.TRANSFERRED.value
+        assert response.json()["status"] == Task.Status.SAMPLING_DOWNLOADED.value
         task = Task.objects.get(pk=task.id)
-        assert task.status == Task.Status.TRANSFERRED
+        assert task.status == Task.Status.SAMPLING_DOWNLOADED
         assert task.failed is False
         assert task.message == ""
 
@@ -386,3 +386,21 @@ class TaskViewSetTestCase(APITestCase):
         assert f'{data["sample_download_percent"]:0.2f}' == "100.00"
         assert data["downloaded_size"] == 10240
         assert data["sample_downloaded_files"] == 2
+
+    def test_waiting_permit_download(self):
+        touch_task_files(self.task)
+        task = self.task
+        task.status = task.Status.SAMPLING_DOWNLOADED
+        task.started_at = task.created_at
+        task.transfer_completed_at = task.created_at
+        task.sample_downloaded_at = task.created_at
+        task.failed = False
+        task.message = ""
+        task.full_download_now = False
+        task.save()
+
+        url = reverse("task-detail", args=[self.task.id])
+
+        response = self.client.get(url)
+        data = response.json()
+        assert data["current_progressing_stage"] == "waiting_permit_download"
