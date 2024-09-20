@@ -1,5 +1,6 @@
 import logging
 from io import BytesIO
+from typing import Optional
 
 from baidupcs_py.baidupcs import BaiduPCSError
 from django.conf import settings
@@ -25,11 +26,11 @@ logger = logging.getLogger(__name__)
 
 
 def delete_remote_files(
-    task_id,
-    remote_path,
-    success_message,
-    catch_error=True,
-):
+    task_id: int,
+    remote_path: str,
+    success_message: str,
+    catch_error: bool = True,
+) -> Response:
     try:
         client = get_baidupcs_client()
         client.delete(remote_path)
@@ -54,7 +55,7 @@ class TaskViewSet(
     filterset_fields = ("shared_link", "shared_id", "status", "failed")
 
     @action(methods=["get", "delete"], detail=True, name="Remote Files")
-    def files(self, request, pk=None):
+    def files(self, request, pk: Optional[int] = None):
         task = self.get_object()
         if request.method == "GET":
             return Response(task.load_files())
@@ -66,7 +67,7 @@ class TaskViewSet(
             )
 
     @action(methods=["get", "delete"], detail=True, name="Local Files")
-    def local_files(self, request, pk=None):
+    def local_files(self, request, pk: Optional[int] = None):
         task = self.get_object()
         if request.method == "GET":
             return Response(task.list_local_files())
@@ -75,12 +76,12 @@ class TaskViewSet(
             return Response({task.id: "local files deleted"})
 
     @action(detail=True, name="Captch Image")
-    def captcha(self, request, pk=None):
+    def captcha(self, request, pk: Optional[int] = None):
         task = self.get_object()
         return HttpResponse(BytesIO(task.captcha), content_type="image/jpeg")
 
     @action(methods=["post"], detail=True, name="Input Captcha Code")
-    def captcha_code(self, request, pk=None):
+    def captcha_code(self, request, pk: Optional[int] = None):
         serializer = CaptchaCodeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -104,7 +105,7 @@ class TaskViewSet(
         return Response(TaskSerializer(task).data)
 
     @action(methods=["post"], detail=True, name="Approve to download whole files")
-    def full_download_now(self, request, pk=None):
+    def full_download_now(self, request, pk: Optional[int] = None):
         serializer = FullDownloadNowSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         task = self.get_object()
@@ -113,25 +114,25 @@ class TaskViewSet(
         return Response(TaskSerializer(task).data)
 
     @action(methods=["post"], detail=True, name="Restart task to downloading files")
-    def restart_downloading(self, request, pk=None):
+    def restart_downloading(self, request, pk: Optional[int] = None):
         task = self.get_object()
         task.restart_downloading()
         return Response({"status": task.status})
 
     @action(methods=["post"], detail=True, name="Restart task from inited status")
-    def restart(self, request, pk=None):
+    def restart(self, request, pk: Optional[int] = None):
         task = self.get_object()
         task.restart()
         return Response({"status": task.status})
 
     @action(methods=["post"], detail=True, name="Resume failed task")
-    def resume(self, request, pk=None):
+    def resume(self, request, pk: Optional[int] = None):
         task = self.get_object()
         task.schedule_resume()
         return Response({"status": task.status})
 
     @action(methods=["delete"], detail=True, name="Erase task, remote and local files")
-    def erase(self, request, pk=None):
+    def erase(self, request, pk: Optional[int] = None):
         task = self.get_object()
         task_id = task.id
         task.erase()

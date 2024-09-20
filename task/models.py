@@ -7,7 +7,12 @@ from os.path import exists
 from os.path import getsize
 from os.path import join
 from pathlib import Path
+from typing import Any
+from typing import Dict
 from typing import Generator
+from typing import List
+from typing import Optional
+from typing import Tuple
 
 from django.conf import settings
 from django.db import models
@@ -96,7 +101,7 @@ class Task(models.Model):
             models.Index(fields=["status"]),
         ]
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Task id={self.id}, {self.shared_id} with {self.total_files} files>"
 
     def __str__(self) -> str:
@@ -126,7 +131,7 @@ class Task(models.Model):
     def remote_path(self) -> str:
         return str(Path(settings.REMOTE_LEECHER_DIR) / self.path)
 
-    def set_files(self, files) -> None:
+    def set_files(self, files: List[Dict[str, Any]]) -> None:
         remote_base_dir = str(Path(settings.REMOTE_LEECHER_DIR) / self.path)
         file_list = []
         for file in files:
@@ -138,10 +143,10 @@ class Task(models.Model):
             file_list.append(file)
         self.files = dumps(file_list)
 
-    def load_files(self):
+    def load_files(self) -> List[Dict[str, Any]]:
         return loads(self.files or "[]") or []
 
-    def list_remote_files(self, files_only=True):
+    def list_remote_files(self, files_only: bool = True) -> List[Dict[str, Any]]:
         if not self.files:
             return []
         files = loads(self.files)
@@ -150,10 +155,13 @@ class Task(models.Model):
         return files
 
     @property
-    def remote_files(self):
+    def remote_files(self) -> List[Dict[str, Any]]:
         return self.list_remote_files(files_only=True)
 
-    def list_local_files(self, samples_only=False):
+    def list_local_files(
+        self,
+        samples_only: bool = False,
+    ) -> Generator[Dict[str, Any], None, None]:
         if samples_only:
             data_path = self.sample_data_path
         else:
@@ -165,70 +173,73 @@ class Task(models.Model):
                 yield {"file": sub_path, "size": getsize(filepath)}
 
     @property
-    def local_files(self):
+    def local_files(self) -> List[Dict[str, Any]]:
         return list(self.list_local_files())
 
     @property
-    def local_sample_files(self) -> list:
+    def local_sample_files(self) -> List[Dict[str, Any]]:
         return list(self.list_local_files(samples_only=True))
 
     @property
-    def total_files(self):
+    def total_files(self) -> int:
         return len([f for f in self.load_files() if f["is_file"]])
 
     @property
-    def local_size(self):
+    def local_size(self) -> int:
         return sum([f["size"] for f in self.local_files])
 
     @property
-    def total_size(self):
+    def total_size(self) -> int:
         return sum([f["size"] for f in self.load_files()])
 
-    def get_largest_file(self):
+    def get_largest_file(self) -> Optional[Tuple[int, str]]:
         files = self.load_files()
         if files:
             return max([(f["size"], f["path"]) for f in files])
+        return None
 
     @property
-    def largest_file(self):
+    def largest_file(self) -> Optional[str]:
         largest = self.get_largest_file()
         if largest:
             size, path = largest
             return path
+        return None
 
     @property
-    def largest_file_size(self):
+    def largest_file_size(self) -> Optional[int]:
         largest = self.get_largest_file()
         if largest:
             size, path = largest
             return size
+        return None
 
     @classmethod
-    def filter_ready_to_transfer(cls):
+    def filter_ready_to_transfer(cls) -> models.QuerySet:
         inited = Q(status=cls.Status.INITED)
         tasks = cls.objects.filter(inited)
         return tasks
 
     @classmethod
-    def filter_transferd(cls):
+    def filter_transferd(cls) -> models.QuerySet:
         return cls.objects.filter(status=cls.Status.TRANSFERRED)
 
     @classmethod
-    def filter_sampling_downloaded(cls):
+    def filter_sampling_downloaded(cls) -> models.QuerySet:
         return cls.objects.filter(
             status=cls.Status.SAMPLING_DOWNLOADED,
             full_download_now=True,
         )
 
     @classmethod
-    def filter_failed(cls):
+    def filter_failed(cls) -> models.QuerySet:
         return cls.objects.filter(failed=True)
 
     @property
-    def is_waiting_for_captcha_code(self):
+    def is_waiting_for_captcha_code(self) -> bool:
         return self.status == self.Status.STARTED and self.captcha_required
 
-    def _reset_status(self, status: Status = None) -> Status:
+    def _reset_status(self, status: Optional[Status] = None) -> Status:
         if status:
             self.status = status
         self.failed = False
@@ -243,7 +254,7 @@ class Task(models.Model):
     def restart_downloading(self) -> Status:
         return self._reset_status(self.Status.TRANSFERRED)
 
-    def get_stages(self) -> Generator[tuple[str, str], None, None]:
+    def get_stages(self) -> Generator[Tuple[str, str], None, None]:
         found_current = False
         status = self.Status
         if not self.failed:
@@ -305,13 +316,14 @@ class Task(models.Model):
                 else:
                     yield name, "todo"
 
-    def get_current_stage(self):
+    def get_current_stage(self) -> Optional[str]:
         for name, done in self.get_stages():
             if done in ["todo", "doing", "failed"]:
                 return name
+        return None
 
     @property
-    def current_progressing_stage(self) -> str:
+    def current_progressing_stage(self) -> Optional[str]:
         return self.get_current_stage()
 
     @property
@@ -321,7 +333,7 @@ class Task(models.Model):
             "downloading_samplings",
         ]
 
-    def get_resume_method_name(self) -> str:
+    def get_resume_method_name(self) -> Optional[str]:
         resume_methods = {
             "waiting_assign": "restart",
             "transferring": "restart",
@@ -332,6 +344,7 @@ class Task(models.Model):
         stage_name = self.get_current_stage()
         if stage_name:
             return resume_methods[stage_name]
+        return None
 
     def inc_retry_times(self) -> int:
         self.retry_times += 1
@@ -400,13 +413,13 @@ class Task(models.Model):
         # assume task is not recoverable by default to avoid flood requests
         return False
 
-    def delete_files(self):
+    def delete_files(self) -> None:
         if exists(self.sample_path):
             shutil.rmtree(self.sample_path)
         if exists(self.data_path):
             shutil.rmtree(self.data_path)
 
-    def erase(self):
+    def erase(self) -> None:
         self.delete_files()
         self.delete()
 
