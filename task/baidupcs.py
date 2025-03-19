@@ -210,6 +210,10 @@ def save_shared(
             i = error.find(" 117,")
             friendly_message = error[:i] + " 117, message: 该分享已过期"
             raise BaiduPCSError(friendly_message)
+        if "error_code: 145," in error:
+            i = error.find(" 145,")
+            friendly_message = error[:i] + " 145, message: 该分享已被删除"
+            raise BaiduPCSError(friendly_message)
         if "message: {'csrf':" in error:
             i = error.find("{'csrf'")
             sensitive_info_removed = error[:i] + "...}"

@@ -258,3 +258,18 @@ class DownloadTest(unittest.TestCase):
         assert mock_download.called
         assert mock_download.call_count == 1
         assert mock_download.call_args.args[0].name == "file.txt"
+
+    def test_save_shared_removed(self):
+        shared_url = "https://pan.baidu.com/s/expired"
+        self.client.api.exists.return_value = False
+        self.client.api.makedir.return_value = None
+        self.client.api.shared_paths.side_effect = BaiduPCSError(
+            "error_code: 145, message: {'csrf': '', ...}",
+            145,
+        )
+
+        with pytest.raises(BaiduPCSError) as exc:
+            save_shared(self.client, shared_url, "/dir", "psw")
+
+        assert "error_code: 145" in str(exc)
+        assert "message: 该分享已被删除" in str(exc)
