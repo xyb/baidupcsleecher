@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html data-theme="cupcake">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,20 +7,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha384-zMEydMdp5mC+i11DwQRMHxzvFhmCbjZtR+KrIUQRc1uJJCq7NTXDSHVLozUvqPEB" crossorigin="anonymous">
     <script src="https://cdn.tailwindcss.com"></script>
     {% load static %}
-    {% comment %}
-      <script src="{% static 'js/htmx/htmx.min.js' %}" defer></script>
-      <script src="{% static 'js/htmx/debug.js' %}" defer></script>
-    {% endcomment %}
-    <script src="https://unpkg.com/htmx.org"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.5"></script>
     <script src="https://unpkg.com/htmx.org/dist/ext/debug.js"></script>
     <script src="https://unpkg.com/htmx.org/dist/ext/response-targets.js"></script>
-    <link href="https://unpkg.com/daisyui@3.5.0/dist/full.css" rel="stylesheet" type="text/css" />
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.5.0/dist/full.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
 
-  <body hx-ext="debug" class="bg-gray-100 dark:bg-black dark:text-gray-500">
-    <div hx-ext="response-targets" class="container mx-auto p-4">
-    <!-- content area -->
+  <body hx-ext="debug" class="bg-base-200 min-h-screen">
+    <div hx-ext="response-targets" class="container mx-auto p-4 max-w-5xl">
       {% block content %}{% endblock %}
     </div>
 
@@ -31,37 +26,36 @@
 
   <script>
     document.body.addEventListener('htmx:configRequest', (event) => {
-      event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}'; //insert csrf token when performing AJAX request
-    })
+      event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+    });
 
-    tailwind.config = {
-      darkMode: 'class',
-    }
+    document.addEventListener('DOMContentLoaded', () => {
+      const themeToggle = document.getElementById('dark-mode-toggle');
+      if (!themeToggle) return;
 
-    function setDarkMode(dark, preference) {
-      if (dark) {
-        preference !== "dark" ? localStorage.setItem('theme', 'dark') : localStorage.removeItem('theme');
-        document.documentElement.classList.add('dark');
-        document.getElementById('darklink').style.display = 'block';
-        document.getElementById('lightlink').style.display = 'none';
-      } else if (!dark) {
-        preference !== "light" ? localStorage.setItem('theme', 'light') : localStorage.removeItem('theme');
-        document.documentElement.classList.remove('dark');
-        document.getElementById('darklink').style.display = 'none';
-        document.getElementById('lightlink').style.display = 'block';
+      const lightTheme = 'cupcake';
+      const darkTheme = 'dracula';
+
+      function setTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        themeToggle.checked = theme === darkTheme;
       }
-    };
-    const preference = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    if (localStorage.getItem('theme') === "dark" || (!('theme' in localStorage) && preference === 'dark')) {
-      setDarkMode(true, preference);
-    }
-    window.onload = function () {
-      document.getElementById('darklink').addEventListener('click', function() {
-        setDarkMode(!document.documentElement.classList.contains('dark'), preference);
+
+      themeToggle.addEventListener('change', () => {
+        setTheme(themeToggle.checked ? darkTheme : lightTheme);
       });
-      document.getElementById('lightlink').addEventListener('click', function() {
-        setDarkMode(!document.documentElement.classList.contains('dark'), preference);
-      });
-    };
+
+      const savedTheme = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+      if (savedTheme) {
+        setTheme(savedTheme);
+      } else if (prefersDark) {
+        setTheme(darkTheme);
+      } else {
+        setTheme(lightTheme);
+      }
+    });
   </script>
 </html>

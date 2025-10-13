@@ -5,4 +5,4 @@ django-filter
 djangorestframework-link-header-pagination
 whitenoise
 django-htmx
-BaiduPCS-Py
+baidupcsapi
