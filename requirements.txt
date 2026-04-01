@@ -5,4 +5,4 @@ django-filter
 djangorestframework-link-header-pagination
 whitenoise
 django-htmx
-git+https://github.com/stone-py/BaiduPCS-Py.git
+https://github.com/stone-py/BaiduPCS-Py/releases/download/v0.7.7/baidupcs_py-0.7.7-cp38-cp38-manylinux_2_39_x86_64.whl
